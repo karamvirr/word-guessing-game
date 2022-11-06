@@ -1,0 +1,29 @@
+.flex-container
+  .button-container
+    = link_to 'Host Game', room_path, class: 'c-button c-button--primary'
+    = link_to 'Join Game', nil, id: 'join-button',
+      class: 'c-button c-button--secondary'
+  form.c-form.hidden
+    .c-form__item-group.c-form__item-group--duo.c-form__item-group--actionable-icon
+      .c-form__item
+        = search_field_tag :search_game_room_input, nil,
+          placeholder: 'Enter room code...', autocomplete: :off
+      .c-form__item
+        button
+          label for='search'
+            i.fa.fa-search
+    p.error
+
+javascript:
+  window.addEventListener('turbo:load',() =>{
+    const joinRoomButton = document.getElementById('join-button');
+    const joinRoomInput = document.getElementById('search_game_room_input');
+    joinRoomButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      const form = document.querySelector('form');
+      if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+        joinRoomButton.focus();
+      }
+    });
+  });

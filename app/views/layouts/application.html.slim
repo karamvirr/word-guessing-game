@@ -1,0 +1,16 @@
+doctype html
+html
+  = render partial: 'layouts/head'
+  body
+    header
+      .title
+        h1 Doodle It!
+    main
+      = yield
+    footer
+      = link_to "https://github.com/karamvirr",
+        target: "_blank", rel: "noopener"
+        i.fa.fa-github
+      = link_to "https://www.linkedin.com/in/rai/",
+        target: "_blank", rel: "noopener"
+        i.fa.fa-linkedin

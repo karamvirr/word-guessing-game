@@ -1,0 +1,105 @@
+table
+  tr.first-row
+    td.first-column.u-centered.muted
+      span>
+        code Click to copy room link!
+      button 📋
+    td.second-column.u-centered
+      h2 _ _ _ _ _
+    td.third-column.u-centered.muted
+      h3#time-remaining 60s
+  tr.second-row
+    td.muted
+      ul.player-container
+        - 3.times do |i|
+          li.player-card
+            div
+              p Karam
+              p
+                i score: 250
+            - if false
+              i.fa.fa-pencil style="font-size: 35px;"
+    td
+      canvas
+    td
+      .chat-container
+        ul.message-container
+          - 5.times do
+            li
+              p.message
+                b Karam:
+                span< bird is the word
+        form
+          = search_field_tag :chat_input, nil, autocomplete: :off
+  tr.third-row
+    td.u-centered.muted
+      = link_to 'Start Game', room_path, class: 'c-button c-button--tertiary'
+    td.hidden
+    td.hidden
+
+javascript:
+  window.addEventListener('turbo:load',() =>{
+    let clipboardButton = document.querySelector('td > button');
+    let clipboardLabel = document.querySelector('td code');
+    let canvas = document.querySelector('canvas');
+    let ctx = canvas.getContext('2d');;
+
+    const copyToClipboard = () => {
+      let url = 'https://www.google.com';
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          clipboardButton.innerText = '✅';
+          clipboardLabel.innerText = 'Link copied to clipboard!';
+          setTimeout(() => {
+            clipboardButton.innerText = '📋';
+            clipboardLabel.innerText = 'Click to copy room link!';
+          }, 2000);
+        })
+        .catch((err) => console.error(`Error copying to clipboard: ${err}`));
+    };
+
+
+    clipboardButton.addEventListener('click', copyToClipboard);
+
+    // last known position
+    let pos = { x: 0, y: 0 };
+    const offset = canvas.getBoundingClientRect();
+    let drawing = false;
+
+    canvas.addEventListener('mouseleave', () => {
+      drawing = false
+    });
+    canvas.addEventListener('mousedown', () => {
+      drawing = true;
+      console.log('drawing mode: ON');
+      const scaleX = canvas.width / offset.width;
+      const scaleY = canvas.height / offset.height;
+
+      pos.x = (event.clientX - offset.left) * scaleX;
+      pos.y = (event.clientY - offset.top) * scaleY;
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    });
+    canvas.addEventListener('mouseup', () =>  {
+      drawing = false;
+      console.log('drawing mode: OFF')
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+      if (drawing) {
+        console.log('should be drawing...', drawing);
+        const scaleX = canvas.width / offset.width;
+        const scaleY = canvas.height / offset.height;
+
+        pos.x = (event.clientX - offset.left) * scaleX;
+        pos.y = (event.clientY - offset.top) * scaleY;
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round'
+
+        ctx.lineTo(pos.x, pos.y); // to
+        ctx.stroke(); // draw it!
+      }
+    });
+  });

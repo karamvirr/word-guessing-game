@@ -1,0 +1,315 @@
+
+//@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400&display=swap')
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap')
+
+@import url('https://fonts.googleapis.com/css2?family=Lobster+Two&display=swap')
+// font-family: 'Lobster Two', cursive
+
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&display=swap')
+// font-family: 'Nanum Brush Script', cursive
+
+@import url('https://fonts.googleapis.com/css2?family=Oleo+Script&display=swap')
+// font-family: 'Oleo Script', cursive
+
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap')
+// font-family: 'Pacifico', cursive
+
+// display: -ms-flex; display: -webkit-flex; display: flex
+
+// COLORS
+$header-background-color: #FFFFFF
+$main-background-color: #F3F2EF
+$footer-background-color: #FFFFFF
+$border-color: #A6A39E
+$primary-button-color: #4CAF50
+$secondary-button-color: #008CBA
+$tertiary-button-color: #E7E7E7
+$linkedin-color: #0177B5
+$github-color: #6E5494
+$error-text-color: red
+
+// MIXINS
+@mixin brush-stroke-border
+  // border-radius: 255px 15px 225px 15px/15px 225px 15px 255px
+  border-top-left-radius: 255px 15px
+  border-top-right-radius: 15px 225px
+  border-bottom-right-radius: 225px 15px
+  border-bottom-left-radius: 15px 255px
+
+// GENERAL STYLING
+*, *::after, *::before
+  box-sizing: border-box
+
+body, input
+  font-family: 'Nunito', sans-serif
+
+body
+  background-color: $main-background-color
+  display: flex
+  flex-direction: column
+  height: 100vh
+  margin: 0
+
+canvas
+  height: 100%
+  width: 100%
+
+.error
+  text-align: center
+  color: $error-text-color
+  margin-top: 0
+
+header
+  flex: 0 1 auto
+  font-family: 'Lobster Two', cursive
+
+main
+  flex: 1 1 auto
+
+footer
+  flex: 0 1 auto
+  padding: 10px
+
+header, footer
+  text-align: center
+
+footer > a:first-child
+  border-right: 1px solid $border-color
+  padding-right: 10px
+
+footer > a:last-child
+  padding-left: 10px
+
+footer > a:last-child
+  margin-left: 5px
+
+.flex-container, .button-container, form
+
+.flex-container
+  height: 100%
+  display: flex
+  flex-direction: column
+  justify-content: center
+  align-items: center
+
+.button-container
+  display: flex
+  padding: 10px
+
+.button-container, form
+  width: 25vw
+
+.c-button, form input
+  font-size: 15pt
+
+form input
+  width: 100%
+  border: 2px solid $border-color
+  border-radius: 5px
+  padding: 5px 5px
+
+.hidden
+  display: none
+
+pre
+  background-color: rgba(0, 0, 0, 0.3)
+
+.chat-container
+  height: 100%
+  overflow-y: scroll
+.message-container
+  margin: 0
+  padding: 0
+  list-style-type: none
+  height: 90%
+  overflow-y: scroll
+  li
+    overflow: auto
+    &:nth-child(even)
+      background-color: #EEF3F8
+
+.message
+    margin: 10px 5px
+
+.author
+  padding-right: 10px
+
+.player-container
+  height: 100%
+  margin: 0
+  padding: 0
+  overflow-y: auto
+  border: 1px solid $border-color
+
+.player-card
+  overflow: auto
+  display: flex
+  background-color: white
+  justify-content: space-between
+  padding: 0px 15px
+  align-items: center
+  &:nth-child(even)
+    background-color: #EEF3F8
+
+.underline
+  width: 80%
+  margin: 0 auto
+  border: 1px solid $border-color
+
+// BUTTONS
+.c-button
+  @include brush-stroke-border
+  flex: 1
+  color: black
+  text-decoration: none
+  padding: 10px 20px
+  margin: 0px 5px
+  letter-spacing: 1px
+  text-align: center
+  transition: all .5s ease
+  box-shadow: 10px 19px 17px hsla(0, 0%, 0%, 0.2)
+  &:hover, &:focus
+    box-shadow: 2px 8px 4px -6px hsla(0, 0%, 0%, 0.3)
+  &.c-button--primary
+    border: 2px solid $primary-button-color
+  &.c-button--secondary
+    border: 2px solid $secondary-button-color
+  &.c-button--tertiary
+    background-color: $tertiary-button-color
+    border: 2px solid black
+
+// TABLES
+table
+  height: 100%
+  width: 100%
+
+tr
+  &.first-row
+    height: 15%
+  &.second-row
+    height: auto
+  &.third-row
+    height: 10%
+
+td
+  background-color: white
+  border: 1px solid black
+  margin: 0
+  padding: 0
+  &.muted
+    background-color: transparent
+    border: none
+  &.first-column
+    width: 20%
+  &.second-column
+    width: auto
+  &.third-column
+    width: 20%
+
+.u-centered
+  text-align: center
+
+.title
+  display: flex
+  justify-content: center
+
+h1
+  user-select: none
+  position: relative
+  transition: color 0.3s
+  &:after
+    content: ''
+    position: absolute
+    top: 0
+    right: 0
+    bottom: 0
+    left: 100%
+    // border-bottom: 2px solid transparent
+    transition: left 0.2s, border-bottom-color 0.5s
+  &:hover
+    color: purple
+    &:after
+      left: 0%
+      // border-bottom-color: purple
+
+// FORMS
+.c-form
+  text-align: left
+  .c-form__item
+    > *
+      padding: 8px
+      width: 100%
+  .c-form__item-group
+    border: 1px solid $border-color
+    width: 100%
+    border-radius: 5px
+    margin-top: 25px
+    .c-form__item
+      vertical-align: middle
+      > *
+        padding: 4px 8px
+  .c-form__item-group--duo
+    display: table
+    .c-form__item
+      border-radius: 4px
+      &:first-child
+        input
+          border-top-right-radius: 0
+          border-bottom-right-radius: 0
+      &:last-child
+        border-top-left-radius: 0
+        border-bottom-left-radius: 0
+    &.c-form__item-group--actionable-icon
+      .c-form__item
+        display: table-cell
+        width: auto
+        &:last-child
+          min-width: 50px
+          width: 10%
+          button
+            border-radius: 0
+            width: 100%
+            height: 100%
+            margin: 0
+            border: 0
+            top: 0
+            bottom: 0
+            left: 0
+            right: 0
+
+// FONT AWESOME ICONS
+.fa
+  font-size: 1.75em
+  transition: all ease 0.3s
+  &:hover
+    opacity: 0.8
+  &.fa-linkedin
+    color: $linkedin-color
+  &.fa-github
+    color: $github-color
+
+// KEYFRAMES
+.invalid-code
+  animation: shake 0.5s ease-out
+
+@keyframes shake
+  8%, 41%
+    transform: translateX(-10px)
+  25%, 58%
+    transform: translateX(10px)
+  75%
+    transform: translateX(-5px)
+  92%
+    transform: translateX(5px)
+  0%, 100%
+    transform: translateX(0)
+
+@keyframes transitioningBackground
+  0%
+    background-position: 1% 0%
+  50%
+    background-position: 99% 100%
+  100%
+    background-position: 1% 0%
+
+
