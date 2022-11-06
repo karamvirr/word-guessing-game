@@ -11,12 +11,12 @@ table
   tr.second-row
     td.muted
       ul.player-container
-        - 3.times do |i|
+        - @room.users.each do |user|
           li.player-card
             div
-              p Karam
+              p = user.name
               p
-                i score: 250
+                i score: #{user.score}
             - if false
               i.fa.fa-pencil style="font-size: 35px;"
     td
@@ -33,7 +33,7 @@ table
           = search_field_tag :chat_input, nil, autocomplete: :off
   tr.third-row
     td.u-centered.muted
-      = link_to 'Start Game', room_path, class: 'c-button c-button--tertiary'
+      = link_to 'Start Game', root_path, class: 'c-button c-button--tertiary'
     td.hidden
     td.hidden
 
