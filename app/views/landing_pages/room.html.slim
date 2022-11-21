@@ -13,10 +13,10 @@ table
       ul.player-container
         - @room.users.each do |user|
           li.player-card
-            div
-              p = user.name
-              p
-                i score: #{user.score}
+            p
+              b = user.name
+              br
+              span #{user.score} PTS
             - if false
               i.fa.fa-pencil style="font-size: 35px;"
     td
