@@ -24,11 +24,11 @@ table
     td
       .chat-container
         ul.message-container
-          - 5.times do
-            li
-              p.message
-                b Karam:
-                span< bird is the word
+          / - 5.times do
+          /   li
+          /     p.message
+          /       b Karam:
+          /       span< bird is the word
         form
           = search_field_tag :chat_input, nil, autocomplete: :off
   tr.third-row
@@ -42,8 +42,17 @@ javascript:
     let clipboardButton = document.querySelector('td > button');
     let clipboardLabel = document.querySelector('td code');
     let canvas = document.querySelector('canvas');
-    let ctx = canvas.getContext('2d');;
+    let ctx = canvas.getContext('2d');
+    let chatInput = document.querySelector('#chat_input');
 
+    const submitInput = (event) => {
+      if (event.code === 'Enter') {
+        event.preventDefault();
+        if (event.target.value.length > 0) {
+          console.log(event.target.value);
+        }
+      }
+    }
     const copyToClipboard = () => {
       let url = 'https://www.google.com';
       navigator.clipboard.writeText(url)
@@ -60,6 +69,7 @@ javascript:
 
 
     clipboardButton.addEventListener('click', copyToClipboard);
+    chatInput.addEventListener('keypress', submitInput);
 
     // last known position
     let pos = { x: 0, y: 0 };
