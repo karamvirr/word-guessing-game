@@ -1,9 +1,9 @@
 .flex-container
   .button-container
-    = link_to 'Host Game', root_path, class: 'c-button c-button--primary'
+    = link_to 'Host Game', create_room_path, class: 'c-button c-button--primary'
     = link_to 'Join Game', nil, id: 'join-button',
       class: 'c-button c-button--secondary'
-  form.c-form.hidden
+  form.c-form class="#{flash.any? ? "invalid-code" : "hidden"}"
     .c-form__item-group.c-form__item-group--duo.c-form__item-group--actionable-icon
       .c-form__item
         = search_field_tag :search_game_room_input, nil,
@@ -12,18 +12,36 @@
         button
           label for='search'
             i.fa.fa-search
-    p.error
+    - if flash.any?
+      - flash.each do |key, value|
+        p.error = "#{key}: #{value}"
 
 javascript:
   window.addEventListener('turbo:load', () => {
     const joinRoomButton = document.getElementById('join-button');
-    const joinRoomInput = document.getElementById('search_game_room_input');
+    const searchRoomInput = document.getElementById('search_game_room_input');
+    const searchRoomButton = document.querySelector('.c-form__item > button');
     joinRoomButton.addEventListener('click', (event) => {
       event.preventDefault();
       const form = document.querySelector('form');
       if (form.classList.contains('hidden')) {
         form.classList.remove('hidden');
         joinRoomButton.focus();
+      }
+    });
+
+    searchRoomButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (searchRoomInput.value.length > 0) {
+        window.location.href = `/room/${searchRoomInput.value}`;
+      }
+    });
+    searchRoomInput.addEventListener('keypress', (event) => {
+      if (event.code === 'Enter') {
+        event.preventDefault();
+        if (event.target.value.length > 0) {
+          window.location.href = `/room/${event.target.value}`;
+        }
       }
     });
   });

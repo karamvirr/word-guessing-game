@@ -2,6 +2,11 @@ class LandingPagesController < ApplicationController
   def home
   end
 
+  def create_room
+    room = Room.create!
+    redirect_to(room_path(slug: room.slug))
+  end
+
   def set_name
     @user = User.find_by(id: params[:id])
     @room = @user.room
@@ -18,6 +23,7 @@ class LandingPagesController < ApplicationController
   def room
     @room = Room.find_by(slug: params[:slug])
     if @room.nil?
+      flash[:error] = "Room code '#{params[:slug]}' is invalid."
       redirect_to(root_path)
       return
     end

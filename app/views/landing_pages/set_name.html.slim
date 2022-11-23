@@ -4,4 +4,5 @@
 
 javascript:
   let input = prompt('Please enter your name:');
-  window.location.href += `/${input}`;
+  let id = "#{@user.id}";
+  window.location.href = `http://localhost:3000/set_name/${id}/${input}`;
