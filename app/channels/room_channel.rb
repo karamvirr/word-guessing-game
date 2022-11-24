@@ -2,34 +2,14 @@ class RoomChannel < ApplicationCable::Channel
   # Called when the consumer has successfully become
   # a subscriber to this channel.
   def subscribed
-    #room = Room.find_by(slug: params[:slug])
-    #stream_for room
     stream_from "room_#{params[:slug]}"
-    # stream_from "chat:#{room.slug}"
-    # receive({
-    #   context: "connection",
-    #   payload: {
-    #     name: current_user.name,
-    #     score: current_user.score,
-    #     content: "#{current_user.name} has joined the chat."
-    #   }
-    # })
+
     renderPlayerRoster("#{current_user.name} has joined the chat.")
   end
 
   # Called once the consumer has cut its cable connection.
   def unsubscribed
-    # receive({
-    #   context: "connection",
-    #   payload: {
-    #     content: "#{current_user.name} has left the chat."
-    #   }
-    # })
-    room = current_user.room
-    if current_user.id == room.drawer_id
-      # stop
-    end
-    # renderPlayerRoster("#{current_user.name} has left the chat.")
+    renderPlayerRoster("#{current_user.name} has left the chat.")
   end
 
   def renderPlayerRoster(message)
@@ -111,27 +91,6 @@ class RoomChannel < ApplicationCable::Channel
   # rebroadcast a message sent by one client to any other connected clients.
   # data - websocket message is in JSON.
   def receive(data)
-    #room = Room.find_by(slug: params[:slug])
-    #ActionCable.server.broadcast(room, data)
     ActionCable.server.broadcast("room_#{params[:slug]}", data)
   end
-
-  ##
-  # player joins empty room:
-  #   - display all users using @room.users.each { ... }
-  #   - display user joined message.
-  #   - trigger a player roster for all other connections. (none)
-  #
-  # player joins non-empty room:
-  #   - display all users using @room.users.each { ... }
-  #   - display user joined message.
-  #   - trigger a player roster for all other connections.
-  #
-  # player leaves room & room becomes empty:
-  #   - delete room.
-  #
-  # player leaves room & room becomes non-empty:
-  #   - display user left meseage.
-  #   - trigger a player roster for all other connections.
-  ##
 end
