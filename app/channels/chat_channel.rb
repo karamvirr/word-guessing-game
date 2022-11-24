@@ -3,12 +3,6 @@ class ChatChannel < ApplicationCable::Channel
   # Called when the consumer has successfully
   # become a subscriber to this channel.
   def subscribed
-    # room = Room.find_by(slug: params[:slug])
-    # stream_for room
-
-    # stream_for "abc"
-    #stream_for "chat_#{params[:slug]}"
-
     stream_from "chat_#{params[:slug]}"
   end
 
@@ -37,11 +31,6 @@ class ChatChannel < ApplicationCable::Channel
 
   # Rebroadcast a message sent by one client to any other connect clients.
   def receive(data)
-    # room = Room.find_by(slug: params[:slug])
-    # ActionCable.server.broadcast(room, data)
-
-    # puts "debug: we are in ChatChannel#receive"
-    # ActionCable.server.broadcast("chat_#{params[:slug]}", data)
     ActionCable.server.broadcast("chat_#{params[:slug]}", data)
   end
 end
