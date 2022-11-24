@@ -14,7 +14,7 @@
             i.fa.fa-search
     - if flash.any?
       - flash.each do |key, value|
-        p.error = "#{key}: #{value}"
+        p.error = value
 
 javascript:
   window.addEventListener('turbo:load', () => {

@@ -1,7 +1,10 @@
 class Room < ApplicationRecord
-  has_many :users
   validates :slug, presence: true, uniqueness: true
   before_validation :initialize_slug
+
+  has_many :users
+  has_one :host, class_name: "User"
+  has_one :drawer, class_name: "User"
 
 private
   def initialize_slug
