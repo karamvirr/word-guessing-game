@@ -47,7 +47,7 @@ if (slug && slug.length > 0) {
     },
 
     stopGame() {
-      document.querySelector('#time-remaining').innerHTML = '60s';
+      document.querySelector('#time-remaining').innerHTML = '10s';
     },
 
     startGame() {
@@ -60,7 +60,6 @@ if (slug && slug.length > 0) {
           roomChannel.perform('stop')
         } else {
           let secondsRemaining = parseInt(timer.innerHTML) - 1;
-          console.log('interval', secondsRemaining);
           roomChannel.perform('timer', { seconds: secondsRemaining });
         }
       }, 1000);
@@ -95,7 +94,7 @@ if (slug && slug.length > 0) {
               <br>
               <span>${element.score} PTS</span>
             </p>
-            ${(element.id === data.host_id) ?
+            ${(element.id === data.drawer_id) ?
               `<i class="fa fa-pencil" style="font-size: 35px"></i>` : ""}
           </li>
         `;

@@ -14,7 +14,7 @@ class ChatChannel < ApplicationCable::Channel
 
   def message(data)
     room = current_user.room
-    if room.current_word.present? && current_user.id != room.drawer.id
+    if room.current_word.present? && current_user.id != room.drawer_id
       if data["message"] == room.current_word
         current_user.score += data["time"]
         current_user.save

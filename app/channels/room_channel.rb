@@ -26,21 +26,22 @@ class RoomChannel < ApplicationCable::Channel
     #   }
     # })
     room = current_user.room
-    if current_user == room.drawer
-      stop
+    if current_user.id == room.drawer_id
+      # stop
     end
-    renderPlayerRoster("#{current_user.name} has left the chat.")
+    # renderPlayerRoster("#{current_user.name} has left the chat.")
   end
 
   def renderPlayerRoster(message)
+    current_user.reload
     room = current_user.room
     data = {
       context: 'connection',
       payload: {
         content: message,
         color: "%06x" % (rand * 0xffffff),
-        host_id: room.host.id,
-        drawer_id: room.drawer.id,
+        host_id: room.host_id,
+        drawer_id: room.drawer_id,
         users: []
       }
     }
@@ -60,27 +61,28 @@ class RoomChannel < ApplicationCable::Channel
 
   def stop
     room = current_user.room
+
     room.current_word = nil
     room.game_started = false
     room.save!
-    # index = room.drawer.id
-    # index += 1
-    # new_drawer = room.users.find_by(id: index)
-    # if new_drawer.nil?
-    #   new_drawer = room.users.first
-    # end
-    # debugger
-    # room.drawer = new_drawer
-    # room.save
+
+    index = room.drawer_id
+    index += 1
+    new_drawer = room.users.find_by(id: index)
+    if new_drawer.nil?
+      new_drawer = room.users.first
+    end
+    room.drawer_id = new_drawer.id
+    room.save!
 
     receive({ context: 'stop' })
     toggle_display
-    renderPlayerRoster
+    renderPlayerRoster("Next up is #{new_drawer.name}")
   end
 
   def draw(payload)
     room = current_user.room
-    if room.drawer == current_user && room.game_started?
+    if room.drawer_id == current_user.id && room.game_started?
       receive({
         context: 'draw',
         payload: payload
@@ -89,11 +91,12 @@ class RoomChannel < ApplicationCable::Channel
   end
 
   def toggle_display
+    room = current_user.room
     receive({
       context: 'toggle_display',
       payload: {
-        host_id: current_user.room.host.id,
-        drawer_id: current_user.room.drawer.id
+        host_id: room.host_id,
+        drawer_id: room.drawer_id
       }
     })
   end

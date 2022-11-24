@@ -16,8 +16,8 @@ class LandingPagesController < ApplicationController
     if params[:value].present?
       # TODO: ensure names are unique to room.
       if @user.update(name: params[:value])
-        if @room.host.nil? || @room.drawer.nil?
-          @room.update!(host: @user, drawer: @user)
+        if @room.host_id.nil? || @room.drawer_id.nil?
+          @room.update!(host_id: @user.id, drawer_id: @user.id)
         end
         redirect_to("/room/#{@room.slug}")
         return

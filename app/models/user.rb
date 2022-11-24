@@ -5,6 +5,7 @@ class User < ApplicationRecord
 private
   def initialize_slug
     return if self.slug.present?
+    return unless self.name.present?
     self.slug = self.name.parameterize
   end
 end
