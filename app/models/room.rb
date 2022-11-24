@@ -1,4 +1,14 @@
 class Room < ApplicationRecord
+  validates :slug, presence: true, uniqueness: true
+  before_validation :initialize_slug
+
   has_many :users
-  validates_uniqueness_of :slug
+  has_one :host, class_name: "User"
+  has_one :drawer, class_name: "User"
+
+private
+  def initialize_slug
+    return if self.slug.present?
+    self.slug = SecureRandom.urlsafe_base64(5).downcase
+  end
 end

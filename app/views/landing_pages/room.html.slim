@@ -4,36 +4,23 @@ table
       span>
         code Click to copy room link!
       button 📋
-    td.second-column.u-centered
-      h2 _ _ _ _ _
+    td.second-column.u-centered.muted
+      h2#word
     td.third-column.u-centered.muted
-      h3#time-remaining 60s
+      h3#time-remaining 600s
   tr.second-row
     td.muted
-      ul.player-container
-        - @room.users.each do |user|
-          li.player-card
-            p
-              b = user.name
-              br
-              span #{user.score} PTS
-            - if false
-              i.fa.fa-pencil style="font-size: 35px;"
+      ul.player-container id="#{@user.id}"
     td
       canvas
     td
       .chat-container
         ul.message-container
-          / - 5.times do
-          /   li
-          /     p.message
-          /       b Karam:
-          /       span< bird is the word
         form
           = search_field_tag :chat_input, nil, autocomplete: :off
   tr.third-row
-    td.u-centered.muted
-      = link_to 'Start Game', root_path, class: 'c-button c-button--tertiary'
+    td.u-centered.muted.hidden
+      = link_to 'Start Game', nil, id: 'start-game', class: 'c-button c-button--tertiary'
     td.hidden
     td.hidden
 
@@ -41,19 +28,7 @@ javascript:
   window.addEventListener('turbo:load',() =>{
     let clipboardButton = document.querySelector('td > button');
     let clipboardLabel = document.querySelector('td code');
-    let canvas = document.querySelector('canvas');
-    let ctx = canvas.getContext('2d');
-    let chatInput = document.querySelector('#chat_input');
-
-    const submitInput = (event) => {
-      if (event.code === 'Enter') {
-        event.preventDefault();
-        if (event.target.value.length > 0) {
-          console.log(event.target.value);
-        }
-      }
-    }
-    const copyToClipboard = () => {
+    clipboardButton.addEventListener('click', () => {
       let url = 'https://www.google.com';
       navigator.clipboard.writeText(url)
         .then(() => {
@@ -65,51 +40,5 @@ javascript:
           }, 2000);
         })
         .catch((err) => console.error(`Error copying to clipboard: ${err}`));
-    };
-
-
-    clipboardButton.addEventListener('click', copyToClipboard);
-    chatInput.addEventListener('keypress', submitInput);
-
-    // last known position
-    let pos = { x: 0, y: 0 };
-    const offset = canvas.getBoundingClientRect();
-    let drawing = false;
-
-    canvas.addEventListener('mouseleave', () => {
-      drawing = false
-    });
-    canvas.addEventListener('mousedown', () => {
-      drawing = true;
-      console.log('drawing mode: ON');
-      const scaleX = canvas.width / offset.width;
-      const scaleY = canvas.height / offset.height;
-
-      pos.x = (event.clientX - offset.left) * scaleX;
-      pos.y = (event.clientY - offset.top) * scaleY;
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-    });
-    canvas.addEventListener('mouseup', () =>  {
-      drawing = false;
-      console.log('drawing mode: OFF')
-    });
-
-    canvas.addEventListener('mousemove', (event) => {
-      if (drawing) {
-        console.log('should be drawing...', drawing);
-        const scaleX = canvas.width / offset.width;
-        const scaleY = canvas.height / offset.height;
-
-        pos.x = (event.clientX - offset.left) * scaleX;
-        pos.y = (event.clientY - offset.top) * scaleY;
-
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round'
-
-        ctx.lineTo(pos.x, pos.y); // to
-        ctx.stroke(); // draw it!
-      }
     });
   });
