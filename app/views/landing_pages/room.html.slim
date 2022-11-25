@@ -25,7 +25,7 @@ table
     td.hidden
 
 javascript:
-  window.addEventListener('turbo:load',() =>{
+  window.addEventListener('DOMContentLoaded', () => {
     let clipboardButton = document.querySelector('td > button');
     let clipboardLabel = document.querySelector('td code');
     clipboardButton.addEventListener('click', () => {
