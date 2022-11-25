@@ -47,7 +47,7 @@ if (slug && slug.length > 0) {
     },
 
     stopGame() {
-      document.querySelector('#time-remaining').innerHTML = '10s';
+      document.querySelector('#time-remaining').innerHTML = '60s';
     },
 
     startGame() {
