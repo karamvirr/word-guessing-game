@@ -2,6 +2,4 @@
 import "@hotwired/turbo-rails"
 import "@rails/actioncable"
 import "controllers"
-import "./channels/consumer"
-import "./channels/room_channel"
-import "./channels/chat_channel"
+import "channels"

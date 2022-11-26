@@ -1,4 +1,4 @@
-import consumer from "./consumer"
+import consumer from "channels/consumer"
 
 let slug = window.location.href.split('/').slice(-1)[0];
 let drawInvocationCount = 0;

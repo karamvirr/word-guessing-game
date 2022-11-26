@@ -3,5 +3,5 @@
 // `bin/rails generate channel` command.
 
 import { createConsumer } from "@rails/actioncable"
-//console.log('hello from consumer js');
+
 export default createConsumer()
