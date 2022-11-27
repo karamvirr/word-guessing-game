@@ -1,44 +1,65 @@
 table
   tr.first-row
-    td.first-column.u-centered.muted
-      span>
-        code Click to copy room link!
-      button 📋
-    td.second-column.u-centered.muted
+    td.first-column.u-centered.td--muted
+      .u-container.u-container--justify-center
+        .clipboard
+          code copy room link
+          button
+            i.fa.fa-clipboard
+    td.second-column.u-centered.td--muted
       h2#word
-    td.third-column.u-centered.muted
-      h3#time-remaining 60s
+    td.third-column.u-centered.td--muted
+      h2#time-remaining 60s
   tr.second-row
-    td.muted
+    td
       ul.player-container id="#{@user.id}"
     td
       canvas
     td
       .chat-container
         ul.message-container
+        .typing-message
+          p
+            i
         form
           = search_field_tag :chat_input, nil, autocomplete: :off
   tr.third-row
-    td.u-centered.muted.hidden
+    td.u-centered.td--muted
       = link_to 'Start Game', nil, id: 'start-game', class: 'c-button c-button--tertiary'
-    td.hidden
-    td.hidden
+    td.td--muted
+      div style="display: flex; justify-content: space-around;"
+        div style="display: flex;"
+          .palette-element.palette-element__color.palette-element__color--black
+          .palette-element.palette-element__color.palette-element__color--red
+          .palette-element.palette-element__color.palette-element__color--orange
+          .palette-element.palette-element__color.palette-element__color--yellow
+          .palette-element.palette-element__color.palette-element__color--green
+          .palette-element.palette-element__color.palette-element__color--blue
+          .palette-element.palette-element__color.palette-element__color--purple
+          .palette-element.palette-element__color.palette-element__color--brown
+          .palette-element.palette-element__color.palette-element__color--silver
+          .palette-element.palette-element__color.palette-element__color--white
+        div style="display: flex; align-items: center;"
+          button.palette-element.palette-element__clear-button
+            i.fa.fa-trash
+    td.td--muted
 
 javascript:
-  window.addEventListener('DOMContentLoaded', () => {
-    let clipboardButton = document.querySelector('td > button');
-    let clipboardLabel = document.querySelector('td code');
-    clipboardButton.addEventListener('click', () => {
-      let url = 'https://www.google.com';
-      navigator.clipboard.writeText(url)
-        .then(() => {
-          clipboardButton.innerText = '✅';
-          clipboardLabel.innerText = 'Link copied to clipboard!';
-          setTimeout(() => {
-            clipboardButton.innerText = '📋';
-            clipboardLabel.innerText = 'Click to copy room link!';
-          }, 2000);
-        })
-        .catch((err) => console.error(`Error copying to clipboard: ${err}`));
-    });
+  document.querySelector('.clipboard').addEventListener('click', () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        let buttonIcon = document.querySelector('.clipboard > button > i');
+        let label = document.querySelector('.clipboard > code');
+        buttonIcon.classList.remove('fa-clipboard');
+        buttonIcon.classList.add('fa-check');
+        buttonIcon.classList.add('success');
+        label.innerText = 'copied!';
+        setTimeout(() => {
+          buttonIcon.classList.remove('fa-check');
+          buttonIcon.classList.remove('success');
+          buttonIcon.classList.add('fa-clipboard');
+          label.innerText = 'copy room link';
+        }, 2000);
+      })
+      .catch((err) => console.error(`Error copying to clipboard: ${err}`));
   });
