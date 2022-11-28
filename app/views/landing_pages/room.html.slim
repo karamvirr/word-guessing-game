@@ -25,21 +25,22 @@ table
           = search_field_tag :chat_input, nil, autocomplete: :off
   tr.third-row
     td.u-centered.td--muted
-      = link_to 'Start Game', nil, id: 'start-game', class: 'c-button c-button--tertiary'
+      = link_to 'Start Game', nil, id: 'start-game',
+        class: 'c-button c-button--tertiary hidden'
     td.td--muted
-      div style="display: flex; justify-content: space-around;"
-        div style="display: flex;"
-          .palette-element.palette-element__color.palette-element__color--black
-          .palette-element.palette-element__color.palette-element__color--red
-          .palette-element.palette-element__color.palette-element__color--orange
-          .palette-element.palette-element__color.palette-element__color--yellow
-          .palette-element.palette-element__color.palette-element__color--green
-          .palette-element.palette-element__color.palette-element__color--blue
-          .palette-element.palette-element__color.palette-element__color--purple
-          .palette-element.palette-element__color.palette-element__color--brown
-          .palette-element.palette-element__color.palette-element__color--silver
-          .palette-element.palette-element__color.palette-element__color--white
-        div style="display: flex; align-items: center;"
+      #drawing-palette.u-container.u-container--justify-around.hidden
+        .u-container
+          #000000.palette-element.palette-element__color.palette-element__color--black
+          #FF0000.palette-element.palette-element__color.palette-element__color--red
+          #FFA500.palette-element.palette-element__color.palette-element__color--orange
+          #FFEA00.palette-element.palette-element__color.palette-element__color--yellow
+          #008000.palette-element.palette-element__color.palette-element__color--green
+          #0000FF.palette-element.palette-element__color.palette-element__color--blue
+          #800080.palette-element.palette-element__color.palette-element__color--purple
+          #A52A2A.palette-element.palette-element__color.palette-element__color--brown
+          #C0C0C0.palette-element.palette-element__color.palette-element__color--silver
+          #FFFFFF.palette-element.palette-element__color.palette-element__color--white
+        .u-container.u-container--align-center
           button.palette-element.palette-element__clear-button
             i.fa.fa-trash
     td.td--muted

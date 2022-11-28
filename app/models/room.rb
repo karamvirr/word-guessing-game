@@ -3,8 +3,6 @@ class Room < ApplicationRecord
   before_validation :initialize_slug
 
   has_many :users
-  # has_one :host, class_name: "User", :dependent => :nullify
-  # has_one :drawer, class_name: "User", :dependent => :nullify
 
 private
   def initialize_slug

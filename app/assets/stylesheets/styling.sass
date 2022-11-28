@@ -34,6 +34,7 @@ $clipboard-color: #6B5F4D
 $white-smoke-color: #f5f5f5
 $element-shadow-color: hsla(0, 0%, 0%, 0.2)
 $element-shadow-hover-color: hsla(0, 0%, 0%, 0.3)
+$correct-guess-color: green
 
 // MIXINS
 @mixin brush-stroke-border
@@ -100,6 +101,8 @@ header, footer
     flex-direction: column
   &.u-container--justify-center
     justify-content: center
+  &.u-container--justify-around
+    justify-content: space-around
   &.u-container--align-center
     align-items: center
 
@@ -232,6 +235,9 @@ h2
   &:nth-child(even)
     background-color: $alternating-color
 
+.success
+  color: $correct-guess-color
+
 .message, .player-card > div > p > b, .typing-message i
   word-break: break-word
 
@@ -271,8 +277,9 @@ h2
   margin-left: 4px
   margin-right: 4px
   transition: all 0.35s ease
-  &:hover, &:focus
-    transform: scale(0.85)
+  &.palette-element--selected
+    transform: scale(0.5)
+  &:hover
     box-shadow: 2px 2px 0px $element-shadow-hover-color
   &.palette-element__clear-button
     background-image: (linear-gradient(270deg, lighten($white-smoke-color, 35%), white))
