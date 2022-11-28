@@ -6,6 +6,8 @@ require_relative '../config/environment'
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require 'rspec/rails'
 
+require "capybara/rails"
+
 Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
 # Add additional requires below this line. Rails is not loaded until this point!
