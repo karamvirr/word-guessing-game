@@ -2,7 +2,7 @@
   .u-container.u-my30
     = link_to 'Host Game', create_room_path, class: 'c-button c-button--primary u-mx10'
     = link_to 'Join Game', nil, class: 'c-button c-button--secondary u-mx10'
-  form.c-form__search class="#{flash.any? ? "invalid-code" : "hidden"}"
+  form.c-form__search class="#{flash.any? ? "invalid-input" : "hidden"}"
     = search_field_tag :search_game_room_input, nil, placeholder: 'Enter room code...', autocomplete: :off
     button
       i.fa.fa-search
@@ -29,7 +29,7 @@ javascript:
       window.location.href = `/room/${searchInput.value}`;
     }
   });
-  searchInput.addEventListener('keypress', (event) => {
+  searchInput.addEventListener('keydown', (event) => {
     if (event.code === 'Enter') {
       event.preventDefault();
       if (event.target.value.length > 0) {

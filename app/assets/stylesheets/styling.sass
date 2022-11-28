@@ -45,9 +45,9 @@ $correct-guess-color: green
   border-bottom-left-radius: 15px 255px
 
 @mixin shadow
-  box-shadow: 10px 19px 17px $element-shadow-color
-  &:hover, &:focus
-    box-shadow: 2px 8px 4px -6px $element-shadow-hover-color
+  box-shadow: 8px 8px 5px $element-shadow-color
+  &:hover
+    box-shadow: 2px 2px 0px $element-shadow-hover-color
 
 // GENERAL STYLING
 *, *::after, *::before
@@ -108,13 +108,15 @@ header, footer
 
 .c-button
   @include brush-stroke-border
-  @include shadow
+  box-shadow: 10px 19px 17px $element-shadow-color
   color: black
   text-decoration: none
   letter-spacing: 1px
   transition: all 0.5s ease
   background-color: rgba($main-background-color, 0.5)
   padding: 10px 20px
+  &:hover, &:focus
+    box-shadow: 2px 8px 4px -6px $element-shadow-hover-color
   &.c-button--primary
     border: 2px solid $primary-button-color
   &.c-button--secondary
@@ -155,7 +157,7 @@ header, footer
   color: $error-color
   margin: 8px 0px
 
-.invalid-code
+.invalid-input
   animation: shake 0.5s ease-out
 
 .hidden
@@ -266,9 +268,8 @@ h2
       height: 100%
       padding: 0px 5px
 
-
 .palette-element
-  box-shadow: 8px 8px 5px $element-shadow-color
+  @include shadow
   border: 1px solid black
   background-color: transparent
   height: 40px
@@ -279,8 +280,6 @@ h2
   transition: all 0.35s ease
   &.palette-element--selected
     transform: scale(0.5)
-  &:hover
-    box-shadow: 2px 2px 0px $element-shadow-hover-color
   &.palette-element__clear-button
     background-image: (linear-gradient(270deg, lighten($white-smoke-color, 35%), white))
   &.palette-element__color
@@ -343,6 +342,32 @@ h2
     .u-pl#{$i}
       padding-left: 0px + $i
 
+
+.player-staging-container
+  display: flex
+  flex-flow: row wrap
+  justify-content: center
+  width: 50vw
+
+.player-staging-card
+  @include shadow
+  border: 2px solid $border-color
+  flex: 0 0 30%;
+  text-align: center
+  padding: 1em 2em
+  margin: 0.5em
+  border-radius: 0.25em
+  > p
+    cursor: default
+    font-size: 1.15em
+
+.animate-pop-in
+  animation: pop-in 0.35s ease-in-out
+
+@for $i from 1 through 10
+  .animate-pop-in:nth-child(#{$i}n)
+    animation-delay: #{($i - 1) * 0.15}s
+
 // FONT AWESOME ICONS
 .fa
   font-size: 1.75em
@@ -367,3 +392,7 @@ h2
     transform: translateX(5px)
   0%, 100%
     transform: translateX(0)
+
+@keyframes pop-in
+  50%
+    transform: scale(1.075)

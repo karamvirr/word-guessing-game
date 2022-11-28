@@ -1,8 +1,0 @@
-- if flash.any?
-  - flash.each do |value|
-    p = value
-
-javascript:
-  let input = prompt('Please enter your name:');
-  let id = "#{@user.id}";
-  window.location.href = `/set_name/${id}/${input}`;

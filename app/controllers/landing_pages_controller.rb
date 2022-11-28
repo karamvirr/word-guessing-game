@@ -1,50 +1,35 @@
 class LandingPagesController < ApplicationController
   def home
-    cookies.delete :user_id # TESTING....
-    # User.destroy_all
-    # Room.destroy_all
+    cookies.delete :user_id
   end
 
   def create_room
+    cookies.delete :user_id
     room = Room.create!
     redirect_to(room_path(slug: room.slug))
   end
 
-  def set_name
-    @user = User.find_by(id: params[:id])
-    @room = @user.room
-    if params[:value].present?
-      # TODO: ensure names are unique to room.
-      if @user.update(name: params[:value])
-        if @room.host_id.nil? || @room.drawer_id.nil?
-          @room.update!(host_id: @user.id, drawer_id: @user.id)
-        end
-        redirect_to("/room/#{@room.slug}")
-        return
-      end
-      flash[:error] = "Name #{params[:value]} already taken."
-      redirect_to(set_name_path(@user))
-    end
+  def staging_area
+    @room = Room.find_by(slug: params[:slug])
   end
 
   def room
-    @room = Room.find_by(slug: params[:slug])
-    if @room.nil?
+    room = Room.find_by(slug: params[:slug])
+    # Redirect user back to root path if the slug provided does not match to
+    # an active room.
+    if room.nil?
       flash[:error] = "Room code '#{params[:slug]}' is invalid."
       redirect_to(root_path)
       return
     end
+
     @user = User.find_by(id: cookies.encrypted[:user_id])
+    # Redirect user to staging area if user information is not set.
     if @user.nil?
-      @user = User.create(room: @room)
+      # Most likely the cookie :user_id is not set.
+      @user = User.create!(room: room)
       cookies.encrypted[:user_id] = @user.id
-      redirect_to(set_name_path(@user))
-      # redirect to set_name
-      return
-    elsif @user.name.nil?
-      # redirect to set_name
-      redirect_to(set_name_path(@user))
-      return
+      redirect_to(staging_area_path(slug: room.slug))
     end
   end
 end
