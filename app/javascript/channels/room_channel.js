@@ -54,7 +54,20 @@ import consumer from "channels/consumer"
       renderMessage(data) {
         let chat = document.querySelector('.message-container');
         let message = null;
-        if (data.user_id) {
+        if (data.connection_message) {
+          // connection status message
+          if (data.message.endsWith('has left the chat.')) {
+            document.querySelector(`.player-card[id='${data.user_id}']`).remove();
+          }
+          message = `
+            <li>
+              <p class="message">
+                ${data.message}
+              </p>
+            </li>
+          `;
+        } else if (data.user_name) {
+          // player message
           message = `
             <li>
               <p class="message">
@@ -64,10 +77,11 @@ import consumer from "channels/consumer"
             </li>
           `;
         } else {
+          // player guess
           message = `
             <li>
               <p class="message">
-                ${data.message}
+                <b>${data.message}</b>
               </p>
             </li>
           `;
@@ -81,12 +95,12 @@ import consumer from "channels/consumer"
       },
 
       refreshTypingText(data) {
-        if (typingList.includes(data.user_name)) {
+        if (data.typing) {
+          typingList.push(data.user_name);
+        } else {
           typingList = typingList.filter((name) => {
             return name !== data.user_name;
           });
-        } else {
-          typingList.push(data.user_name);
         }
         let text = '';
         if (typingList.length > 0) {
@@ -100,13 +114,13 @@ import consumer from "channels/consumer"
         let players = [];
         data.users.forEach((user, index) => {
           let playerCardHTML = `
-            <li class="player-card u-py16" id="${user.id}">
+            <li class="player-card" id="${user.id}">
               <div>
-                <p style="color: gray;" class="u-mr8">${index + 1}</p>
+                <p class="position">${index + 1}</p>
                 <p>
-                  <b>${user.name} <span>${((userId === user.id) ? '(you)' : '')}</span></b>
+                  <b class="name">${user.name} <span>${((userId === user.id) ? '(you)' : '')}</span></b>
                   <br>
-                  <span style="font-size: 14px;">${user.score} PTS</span>
+                  <span class="score">${user.score} PTS</span>
                 </p>
               </div>
               ${(user.id === data.drawer_id) ?
@@ -150,7 +164,7 @@ import consumer from "channels/consumer"
       },
 
       refreshTimeRemaining(data) {
-        roundStarted = (data.seconds !== 60);
+        roundStarted = (data.seconds !== 15);
         document.querySelector('#time-remaining').innerText = `${data.seconds}s`;
       }
     });
@@ -194,6 +208,59 @@ import consumer from "channels/consumer"
     let isDrawing = false;
     let startX, startY, endX, endY;
 
+    // let undoButton = document.querySelector('.palette-element__undo-button');
+    // let redoButton = document.querySelector('.palette-element__redo-button');
+    // let undoData = [];
+    // let redoData = [];
+
+    // const saveState = () => {
+    //   undoData.push(canvas.toDataURL());
+    //   console.log(undoData);
+    //   toggleUndoVisibility();
+    //   console.log('state saved');
+    // };
+
+    // // pre: undoData.length >= 1
+    // const undoState = () => {
+    //   redoData.unshift(undoData.shift());
+    //   if (undoData.length == 0) {
+    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //   } else {
+    //     let dataURL = undoData[0];
+    //     let img = document.createElement('img');
+    //     img.src = dataURL;
+    //     img.addEventListener('load', () => {
+    //       ctx.drawImage(img, 0, 0);
+    //     });
+    //   }
+    //   toggleUndoVisibility();
+    // };
+    // // pre: redoData.length >= 1
+    // const redoState = () => {
+    //   undoData.unshift(redoData.shift());
+
+    // };
+
+    // const toggleUndoVisibility = () => {
+    //   if (undoData.length == 0) {
+    //     undoButton.classList.add('hidden');
+    //   } else {
+    //     undoButton.classList.remove('hidden');
+    //   }
+    //   if (redoData.length == 0) {
+    //     redoButton.classList.add('hidden');
+    //   } else {
+    //     redoButton.classList.remove('hidden');
+    //   }
+    // };
+
+    // undoButton.addEventListener('click', () => {
+    //   undoState();
+    // });
+    // redoButton.addEventListener('click', () => {
+    //   restoreState();
+    // })
+
     // Returns distance between point (x1, y1) and point (x2, y2)
     const pointDistance = (x1, y1, x2, y2) => {
       return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -208,6 +275,7 @@ import consumer from "channels/consumer"
     });
     canvas.addEventListener('mouseup', () => {
       isDrawing = false;
+      // saveState();
     });
     canvas.addEventListener('mousedown', (event) => {
       isDrawing = true;
@@ -248,11 +316,19 @@ import consumer from "channels/consumer"
     chatInput.addEventListener('keydown', (event) => {
       if (!isTyping) {
         isTyping = true;
-        channel.emit({ context: 'typing', user_name: getNameFromId(userId) });
+        channel.emit({
+          context: 'typing',
+          user_name: getNameFromId(userId),
+          typing: isTyping
+        });
         setTimeout(() => {
           isTyping = false;
-          channel.emit({ context: 'typing', user_name: getNameFromId(userId) });
-        }, 750);
+          channel.emit({
+            context: 'typing',
+            user_name: getNameFromId(userId),
+            typing: isTyping
+          });
+        }, 1000);
       }
 
       if (event.code === 'Enter') {
@@ -260,6 +336,12 @@ import consumer from "channels/consumer"
         // If the drawing palette is visible, it means that it's our turn to draw.
         // Therefore, anything we type in the chat should NOT be counted as a guess.
         const isDrawing = !document.querySelector('#drawing-palette').classList.contains('hidden');
+        isTyping = false;
+        channel.emit({
+          context: 'typing',
+          user_name: getNameFromId(userId),
+          typing: isTyping
+        });
         channel.emit({
           context: 'message',
           user_id: userId,

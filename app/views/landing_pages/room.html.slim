@@ -9,7 +9,7 @@ table
     td.second-column.u-centered.td--muted
       h2#word
     td.third-column.u-centered.td--muted
-      h2#time-remaining 60s
+      h2#time-remaining 15s
   tr.second-row
     td
       ul.player-container id="#{@user.id}"
@@ -41,6 +41,10 @@ table
           #C0C0C0.palette-element.palette-element__color.palette-element__color--silver
           #FFFFFF.palette-element.palette-element__color.palette-element__color--white
         .u-container.u-container--align-center
+          button.palette-element.palette-element__undo-button.hidden
+            i.fa.fa-undo
+          button.palette-element.palette-element__redo-button.hidden
+            i.fas.fa-redo-alt
           button.palette-element.palette-element__clear-button
             i.fa.fa-trash
     td.td--muted

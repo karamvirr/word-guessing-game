@@ -23,7 +23,7 @@ import consumer from "channels/consumer"
           document.querySelector('#room-information').classList.remove('hidden');
           data.users.forEach((user) => {
             let playerCardHTML = `
-              <div class="player-staging-card animate-pop-in">
+              <div class="c-card animate-pop-in">
                 <p>${user.name}</p>
               </div>
             `;
@@ -42,7 +42,7 @@ import consumer from "channels/consumer"
 
     const names = () => {
       return Array.from(
-        document.querySelectorAll('.player-staging-card > p')
+        document.querySelectorAll('.c-card > p')
       ).map((node) => { return node.innerText; });
     }
 

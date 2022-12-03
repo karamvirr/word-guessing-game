@@ -1,21 +1,42 @@
 class RoomChannel < ApplicationCable::Channel
+
   # Called when the consumer has successfully become a subscriber to
   # this channel.
   def subscribed
     stream_from "room_#{params[:slug]}"
     refresh_player_roster
     render_message({
-      context: 'message', message: "#{current_user.name} has joined the chat."
+      context: 'message',
+      connection_message: true,
+      message: "#{current_user.name} has joined the chat."
     })
   end
 
   # Called once the consumer has cut its cable connection.
   # Any cleanup needed when channel is unsubscribed.
   def unsubscribed
-    refresh_player_roster
-    render_message({
-      context: 'message', message: "#{current_user.name} has left the chat."
-    })
+    # I've come to find out that if a user closes a tab, this method won't be
+    # executed in its entirety if there are heavy computations, or multiple
+    # successive method calls.
+    # Therefore, I'm just doing the minimum.
+    # The client side message recipients will parse the method, check if the
+    # message ends with '... left the chat.' and use that as a signal to remove
+    # the user's player card. Doing this offloads computation in this method &
+    # ensures it gets to finish before the user's tab closes.
+
+    # if current_user.room.drawer_id == current_user.id
+    #   current_user.room.update_columns(
+    #     drawer_id: current_user.room.where.not(id: current_user.id).first.id
+    #   )
+    # end
+
+    # render_message({
+    #   context: 'message',
+    #   connection_message: true,
+    #   user_id: current_user.id,
+    #   message: "#{current_user.name} has left the chat."
+    # })
+    # current_user.delete
   end
 
   # Called when there's incoming data on the websocket for this channel from a
@@ -23,29 +44,30 @@ class RoomChannel < ApplicationCable::Channel
   #
   # @param :data (Hash) -> payload recieved from consumer.
   def received(data)
+    current_user.reload
+    current_user.room.reload
+
     case data['context']
     when 'draw'
-      return if current_user.id != room.drawer_id
-      return unless room.game_started?
+      puts("ALLOW DRAW? #1: #{current_user.id != current_user.room.drawer_id}")
+      puts("ALLOW DRAW? #2: #{current_user.room.game_started?}")
+      return unless current_user.room.can_draw?(current_user.id)
     when 'start'
-      room.current_word = data['current_word']
-      room.game_started = true
-      room.save!
+      current_user.room.start_game(data['current_word'])
+      puts("GAME STARTED: #{current_user.room.game_started?}")
+      puts("CURRENT WORD: #{current_user.room.current_word}")
       return
     when 'stop'
-      room.current_word = nil
-      room.game_started = false
-      room.set_next_drawer
-      room.save!
+      current_user.room.end_game
+      current_user.room.set_next_drawer
       received({ context: 'clear' })
-      received({ context: 'refresh_timer', seconds: 60 })
+      received({ context: 'refresh_timer', seconds: 15 })
       refresh_player_roster
       return
     when 'message'
       if data['is_guess']
-        if room.current_word == data['message'].downcase.strip
-          current_user.score += data['point_award']
-          current_user.save!
+        if current_user.room.correct_guess?(data['message'].downcase.strip)
+          current_user.set_score(current_user.score + data['point_award'])
           emit({
             context: 'message', message: "#{current_user.name} correctly guessed the word!"
           })
@@ -74,20 +96,15 @@ class RoomChannel < ApplicationCable::Channel
   end
 
 private
-  # Returns the current room model.
-  def room
-    current_user.room
-  end
-
   # Triggers all consumers of the current channel to (re)render their player
   # roster.
   def refresh_player_roster
     data = {
       context: 'refresh_player_roster',
       users: [],
-      drawer_id: room.drawer_id
+      drawer_id: current_user.room.drawer_id
     }
-    room.users.each do |user|
+    current_user.room.users.each do |user|
       data.dig(:users) << user
     end
     emit(data)

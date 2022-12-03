@@ -13,22 +13,49 @@ class Room < ApplicationRecord
 
 
   def start_game(word)
-    self.current_word = word
-    self.game_started = true
+    update!(current_word: word, game_started: true)
   end
 
   def end_game
-    self.current_word = nil
-    self.game_started = false
+    update!(current_word: nil, game_started: false)
+    # self.users.each do |user|
+    #   user.update!(score: 0)
+    # end
+  end
+
+  def can_draw?(id)
+    (id == self.drawer_id) && self.game_started?
+  end
+
+  def correct_guess?(guess)
+    self.current_word == guess
+  end
+
+  # Returns the user removed from room.
+  def remove_user(user)
+    return user if user.nil? || !self.users.include?(user)
+
+    # argument is passed-by-value
+    self.users.find_by(id: user.id).destroy!
   end
 
   # Sets and returns the user model record of the next drawer.
   # If room contains no users, nil is returned.
   # If room contains only one user, that user record is returned.
   def set_next_drawer
-    return nil if self.users.empty?
+    return if self.users.empty?
+    if self.drawer_id.nil?
+      update!(drawer_id: self.users.first.id)
+      return self.users.first
+    end
+    unless self.users.map(&:id).include?(self.drawer_id)
+      # if we are here it probably means the current drawer left the room.
+      update!(drawer_id: self.users.first.id)
+      return
+    end
+
     index = self.users.map(&:id).index(self.drawer_id)
-    self.drawer_id = (index + 1) % self.users.count
+    update!(drawer_id: self.users[(index + 1) % self.users.count].id)
     self.users[(index + 1) % self.users.count]
   end
 

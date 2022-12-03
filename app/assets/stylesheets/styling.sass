@@ -198,7 +198,7 @@ canvas
   text-align: center
 
 h2
-  font-size: 1.5em
+  font-size: 1.75em
   font-weight: 300
 
 .clipboard
@@ -227,13 +227,23 @@ h2
 .player-card
   display: flex
   justify-content: space-between
-  padding: 0px 15px
+  padding: 0em 1em
+  padding-top: 1.25em
+  padding-bottom: 1.25em
   align-items: center
   div
     display: flex
     align-items: center
+    .position
+      font-size: 1em
+      color: gray
+      margin-right: 0.75em
+    .name
+      font-size: 1.1em
+    .score
+      font-size: 0.85em
   i
-    font-size: 30px
+    font-size: 2em
   &:nth-child(even)
     background-color: $alternating-color
 
@@ -253,16 +263,21 @@ h2
     > li
       overflow: auto
       > p.message
-        margin: 10px 5px
+        font-size: 1em
+        margin: 0.75em 1em
       &:nth-child(even)
         background-color: $alternating-color
   > .typing-message
     height: 5%
-    padding: 0px 5px
+    padding: 0em 0.75em
     > p i
       width: 100%
+      color: gray
   > form
     height: 8%
+    padding-bottom: 0.25em
+    padding-left: 0.25em
+    padding-right: 0.25em
     > input
       width: 100%
       height: 100%
@@ -272,8 +287,8 @@ h2
   @include shadow
   border: 1px solid black
   background-color: transparent
-  height: 40px
-  width: 40px
+  height: 3em
+  width: 3em
   border-radius: 50%
   margin-left: 4px
   margin-right: 4px
@@ -349,13 +364,14 @@ h2
   justify-content: center
   width: 50vw
 
-.player-staging-card
+.c-card
   @include shadow
   border: 2px solid $border-color
   flex: 0 0 30%;
   text-align: center
   padding: 1em 2em
   margin: 0.5em
+  transition: all 0.5s ease
   border-radius: 0.25em
   > p
     cursor: default
@@ -370,7 +386,7 @@ h2
 
 // FONT AWESOME ICONS
 .fa
-  font-size: 1.75em
+  font-size: 2em
   &.fa__social
     transition: all ease 0.3s
   &:hover
