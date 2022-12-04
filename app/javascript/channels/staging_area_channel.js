@@ -62,7 +62,6 @@ import consumer from "channels/consumer"
         shake();
         return;
       }
-      console.log('here...');
       // Calls 'StagingAreaChannel#set_name(data)' on the server.
       channel.perform('set_name', { name: name });
       // Now that our name is set, let's hop into the game room! :)
@@ -77,9 +76,10 @@ import consumer from "channels/consumer"
     });
     nameInput.addEventListener('keydown', (event) => {
       if (event.code === 'Enter') {
+        const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
         event.preventDefault();
-        if (event.target.value.length > 0) {
-          setNameRequest(event.target.value);
+        if (sanitizedInput.length > 0) {
+          setNameRequest(sanitizedInput);
         }
       }
     })

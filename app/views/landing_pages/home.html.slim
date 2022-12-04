@@ -31,9 +31,10 @@ javascript:
   });
   searchInput.addEventListener('keydown', (event) => {
     if (event.code === 'Enter') {
+      const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
       event.preventDefault();
-      if (event.target.value.length > 0) {
-        window.location.href = `/room/${event.target.value}`;
+      if (sanitizedInput.length > 0) {
+        window.location.href = `/room/${sanitizedInput}`;
       }
     }
   });

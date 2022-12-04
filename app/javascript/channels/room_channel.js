@@ -353,8 +353,9 @@ import consumer from "channels/consumer"
       }
 
       if (event.code === 'Enter') {
+        const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
         event.preventDefault();
-        if (event.target.value.length > 0) {
+        if (sanitizedInput.length > 0) {
           // If the drawing palette is visible, it means that it's our turn to draw.
           // Therefore, anything we type in the chat should NOT be counted as a guess.
           const isDrawing = !document.querySelector('#drawing-palette').classList.contains('hidden');
@@ -368,7 +369,7 @@ import consumer from "channels/consumer"
             context: 'message',
             user_id: userId,
             user_name: getNameFromId(userId),
-            message: event.target.value,
+            message: sanitizedInput,
             is_guess: (gameStarted && !isDrawing),
             point_award: getSecondsRemaining(),
           });
