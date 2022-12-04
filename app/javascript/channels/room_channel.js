@@ -30,6 +30,9 @@ import consumer from "channels/consumer"
           case 'draw':
             this.draw(data);
             break;
+          case 'restore_state':
+            drawStateFromURL(data.url);
+            break;
           case 'clear':
             this.clearCanvas();
             break;
@@ -77,7 +80,10 @@ import consumer from "channels/consumer"
             </li>
           `;
         } else {
-          // player guess
+          // player guess or game start/end message
+          if (data.correct_guess) {
+            // document.querySelector('#chat-input').classList.add('disabled-input');
+          }
           message = `
             <li>
               <p class="message">
@@ -164,13 +170,13 @@ import consumer from "channels/consumer"
       },
 
       refreshTimeRemaining(data) {
-        roundStarted = (data.seconds !== 15);
+        gameStarted = (data.seconds !== 60);
         document.querySelector('#time-remaining').innerText = `${data.seconds}s`;
       }
     });
 
     /* Utilities */
-    let roundStarted = false;
+    let gameStarted = false;
     const userId = parseInt(document.querySelector('.player-container').id);
     const getNameFromId = (id) => {
       return document
@@ -196,9 +202,11 @@ import consumer from "channels/consumer"
       })
     });
     clearButton.addEventListener('click', () => {
-      channel.emit({
-        context: 'clear'
-      })
+      redoData = [];
+      undoData = [];
+      toggleUndoVisibility();
+
+      channel.emit({ context: 'clear' })
     });
 
     /* Drawing */
@@ -206,65 +214,82 @@ import consumer from "channels/consumer"
     let offset = canvas.getBoundingClientRect();
     let ctx = canvas.getContext('2d');
     let isDrawing = false;
-    let startX, startY, endX, endY;
+    let p1 = { x: 0, y: 0 }
+    let p2 = { x: 0, y: 0 }
 
-    // let undoButton = document.querySelector('.palette-element__undo-button');
-    // let redoButton = document.querySelector('.palette-element__redo-button');
-    // let undoData = [];
-    // let redoData = [];
+    // used for undo/redo functionality
+    let captureCanvasState = false;
 
-    // const saveState = () => {
-    //   undoData.push(canvas.toDataURL());
-    //   console.log(undoData);
-    //   toggleUndoVisibility();
-    //   console.log('state saved');
-    // };
+    // Scales point coordinates so that it's relative to canvas element.
+    // 'point' argument is modified.
+    const scalePoint = (point, event) => {
+      const scaleX = canvas.width / offset.width;
+      const scaleY = canvas.height / offset.height;
 
-    // // pre: undoData.length >= 1
-    // const undoState = () => {
-    //   redoData.unshift(undoData.shift());
-    //   if (undoData.length == 0) {
-    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //   } else {
-    //     let dataURL = undoData[0];
-    //     let img = document.createElement('img');
-    //     img.src = dataURL;
-    //     img.addEventListener('load', () => {
-    //       ctx.drawImage(img, 0, 0);
-    //     });
-    //   }
-    //   toggleUndoVisibility();
-    // };
-    // // pre: redoData.length >= 1
-    // const redoState = () => {
-    //   undoData.unshift(redoData.shift());
-
-    // };
-
-    // const toggleUndoVisibility = () => {
-    //   if (undoData.length == 0) {
-    //     undoButton.classList.add('hidden');
-    //   } else {
-    //     undoButton.classList.remove('hidden');
-    //   }
-    //   if (redoData.length == 0) {
-    //     redoButton.classList.add('hidden');
-    //   } else {
-    //     redoButton.classList.remove('hidden');
-    //   }
-    // };
-
-    // undoButton.addEventListener('click', () => {
-    //   undoState();
-    // });
-    // redoButton.addEventListener('click', () => {
-    //   restoreState();
-    // })
-
-    // Returns distance between point (x1, y1) and point (x2, y2)
-    const pointDistance = (x1, y1, x2, y2) => {
-      return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      point.x = (event.clientX - offset.left) * scaleX;
+      point.y = (event.clientY - offset.top) * scaleY;
     };
+
+    // Returns distance between points a and b
+    // pre: arguments are objects with x, y values.
+    const pointDistance = (a, b) => {
+      return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+    };
+
+    let undoButton = document.querySelector('.palette-element__undo-button');
+    let redoButton = document.querySelector('.palette-element__redo-button');
+    let undoData = []; // used as a stack.
+    let redoData = []; // used as a queue.
+
+    const saveState = (event) => {
+      redoData = [];
+      undoData.push(canvas.toDataURL());
+      toggleUndoVisibility();
+    };
+
+    // pre: undoData.length >= 1
+    const undoState = () => {
+      redoData.unshift(undoData.pop());
+      channel.emit({ context: 'clear' });
+      if (undoData.length > 0) {
+        channel.emit({ context: 'restore_state', url: undoData[undoData.length - 1] })
+      }
+      toggleUndoVisibility();
+    };
+
+    // pre: redoData.length >= 1
+    const redoState = () => {
+      const dataURL = redoData.shift();
+      undoData.push(dataURL);
+      channel.emit({ context: 'clear' });
+      channel.emit({ context: 'restore_state', url: dataURL })
+      toggleUndoVisibility();
+    };
+
+    const drawStateFromURL = (url) => {
+      let img = document.createElement('img');
+      img.src = url;
+      img.addEventListener('load', () => {
+        ctx.drawImage(img, 0, 0);
+      });
+    };
+
+    const toggleUndoVisibility = () => {
+      if (undoData.length == 0) {
+        undoButton.classList.add('hidden');
+      } else {
+        undoButton.classList.remove('hidden');
+      }
+      if (redoData.length == 0) {
+        redoButton.classList.add('hidden');
+      } else {
+        redoButton.classList.remove('hidden');
+      }
+    };
+
+    undoButton.addEventListener('click', undoState);
+    redoButton.addEventListener('click', redoState);
+
 
     window.addEventListener("resize", () => {
       offset = canvas.getBoundingClientRect();
@@ -275,35 +300,31 @@ import consumer from "channels/consumer"
     });
     canvas.addEventListener('mouseup', () => {
       isDrawing = false;
-      // saveState();
+      if (captureCanvasState) {
+        saveState();
+      }
+      captureCanvasState = false;
     });
     canvas.addEventListener('mousedown', (event) => {
       isDrawing = true;
-      const scaleX = canvas.width / offset.width;
-      const scaleY = canvas.height / offset.height;
-
-      startX = (event.clientX - offset.left) * scaleX;
-      startY = (event.clientY - offset.top) * scaleY;
+      offset = canvas.getBoundingClientRect();
+      scalePoint(p1, event);
     });
     canvas.addEventListener('mousemove', (event) => {
       if (isDrawing) {
-        const scaleX = canvas.width / offset.width;
-        const scaleY = canvas.height / offset.height;
-
-        endX = (event.clientX - offset.left) * scaleX;
-        endY = (event.clientY - offset.top) * scaleY;
-
-        if(pointDistance(startX, startY, endX, endY) > 2) {
+        scalePoint(p2, event);
+        if(pointDistance(p1, p2) > 2) {
+          captureCanvasState = true;
           channel.emit({
             context: 'draw',
             color: getSelectedColor(),
-            start_x: startX,
-            start_y: startY,
-            end_x: endX,
-            end_y: endY
+            start_x: p1.x,
+            start_y: p1.y,
+            end_x: p2.x,
+            end_y: p2.y
           })
-          startX = endX;
-          startY = endY;
+          p1.x = p2.x;
+          p1.y = p2.y;
         }
       }
     });
@@ -333,47 +354,57 @@ import consumer from "channels/consumer"
 
       if (event.code === 'Enter') {
         event.preventDefault();
-        // If the drawing palette is visible, it means that it's our turn to draw.
-        // Therefore, anything we type in the chat should NOT be counted as a guess.
-        const isDrawing = !document.querySelector('#drawing-palette').classList.contains('hidden');
-        isTyping = false;
-        channel.emit({
-          context: 'typing',
-          user_name: getNameFromId(userId),
-          typing: isTyping
-        });
-        channel.emit({
-          context: 'message',
-          user_id: userId,
-          user_name: getNameFromId(userId),
-          message: event.target.value,
-          is_guess: (roundStarted && !isDrawing),
-          point_award: getSecondsRemaining(),
-        });
-        event.target.value = '';
+        if (event.target.value.length > 0) {
+          // If the drawing palette is visible, it means that it's our turn to draw.
+          // Therefore, anything we type in the chat should NOT be counted as a guess.
+          const isDrawing = !document.querySelector('#drawing-palette').classList.contains('hidden');
+          isTyping = false;
+          channel.emit({
+            context: 'typing',
+            user_name: getNameFromId(userId),
+            typing: isTyping
+          });
+          channel.emit({
+            context: 'message',
+            user_id: userId,
+            user_name: getNameFromId(userId),
+            message: event.target.value,
+            is_guess: (gameStarted && !isDrawing),
+            point_award: getSecondsRemaining(),
+          });
+          event.target.value = '';
+        }
       }
     });
 
     /* Turn based mechanics */
+    const wordOptionOverlay = document.querySelector('.u-overlay-container');
+    const wordOptions = document.querySelectorAll('.c-card.c-card__word');
     const getSecondsRemaining = () => {
       return parseInt(document.querySelector('#time-remaining').innerText);
     };
+    const handleWordSelection = (event) => {
+      channel.emit({
+        context: 'message',
+        message: `${getNameFromId(userId)} is now drawing.`,
+      });
 
-    document.querySelector('#start-game').addEventListener('click', (event) => {
-      event.preventDefault();
-      let word = prompt('Enter a word:').replace(/\W/g, '').toLowerCase();
+      wordOptionOverlay.classList.add('hidden');
       document.querySelector('#start-game').classList.add('hidden');
-      channel.emit({ context: 'start', current_word: word });
+
+      const word = event.target.querySelector('p.title').innerText;
+      channel.emit({ context: 'start', word: word });
+
       console.log('start');
-      roundStarted = true;
+      gameStarted = true;
       const interval = setInterval(() => {
         // This is being placed in the interval so that it will set correctly if
         // the user currently drawing refreshes their tab.
-        roundStarted = true;
+        gameStarted = true;
         console.log('tic');
         let seconds = getSecondsRemaining();
         if (seconds === 0) {
-          roundStarted = false;
+          gameStarted = false;
           console.log('stop');
           window.clearInterval(interval);
           channel.emit({ context: 'stop' })
@@ -381,6 +412,18 @@ import consumer from "channels/consumer"
           channel.emit({ context: 'refresh_timer', seconds: (seconds - 1) })
         }
       }, 1000);
+    };
+
+    wordOptions.forEach((element) => {
+      element.addEventListener('click', handleWordSelection);
+    });
+    document.querySelector('#start-game').addEventListener('click', (event) => {
+      event.preventDefault();
+      wordOptionOverlay.classList.remove('hidden');
+      channel.emit({
+        context: 'message',
+        message: `${getNameFromId(userId)} is choosing a word.`,
+      });
     });
   }
 })();

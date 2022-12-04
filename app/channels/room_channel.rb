@@ -30,12 +30,12 @@ class RoomChannel < ApplicationCable::Channel
     #   )
     # end
 
-    # render_message({
-    #   context: 'message',
-    #   connection_message: true,
-    #   user_id: current_user.id,
-    #   message: "#{current_user.name} has left the chat."
-    # })
+    render_message({
+      context: 'message',
+      connection_message: true,
+      user_id: current_user.id,
+      message: "#{current_user.name} has left the chat."
+    })
     # current_user.delete
   end
 
@@ -53,7 +53,7 @@ class RoomChannel < ApplicationCable::Channel
       puts("ALLOW DRAW? #2: #{current_user.room.game_started?}")
       return unless current_user.room.can_draw?(current_user.id)
     when 'start'
-      current_user.room.start_game(data['current_word'])
+      current_user.room.start_game(data['word'])
       puts("GAME STARTED: #{current_user.room.game_started?}")
       puts("CURRENT WORD: #{current_user.room.current_word}")
       return
@@ -61,7 +61,7 @@ class RoomChannel < ApplicationCable::Channel
       current_user.room.end_game
       current_user.room.set_next_drawer
       received({ context: 'clear' })
-      received({ context: 'refresh_timer', seconds: 15 })
+      received({ context: 'refresh_timer', seconds: 60 })
       refresh_player_roster
       return
     when 'message'
@@ -69,7 +69,9 @@ class RoomChannel < ApplicationCable::Channel
         if current_user.room.correct_guess?(data['message'].downcase.strip)
           current_user.set_score(current_user.score + data['point_award'])
           emit({
-            context: 'message', message: "#{current_user.name} correctly guessed the word!"
+            context: 'message',
+            correct_guess: true,
+            message: "#{current_user.name} correctly guessed the word!"
           })
           refresh_player_roster
         else

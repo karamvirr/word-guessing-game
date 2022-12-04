@@ -24,7 +24,7 @@ import consumer from "channels/consumer"
           data.users.forEach((user) => {
             let playerCardHTML = `
               <div class="c-card animate-pop-in">
-                <p>${user.name}</p>
+                <p class="title">${user.name}</p>
               </div>
             `;
             const playerCard = range.createContextualFragment(playerCardHTML);
@@ -42,7 +42,7 @@ import consumer from "channels/consumer"
 
     const names = () => {
       return Array.from(
-        document.querySelectorAll('.c-card > p')
+        document.querySelectorAll('.c-card > .title')
       ).map((node) => { return node.innerText; });
     }
 

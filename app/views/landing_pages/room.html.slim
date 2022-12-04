@@ -9,11 +9,19 @@ table
     td.second-column.u-centered.td--muted
       h2#word
     td.third-column.u-centered.td--muted
-      h2#time-remaining 15s
+      h2#time-remaining 60s
   tr.second-row
     td
       ul.player-container id="#{@user.id}"
-    td
+    td.canvas-container
+      .u-overlay-container.hidden
+        .u-container.u-container--column.u-container--align-center.u-container--full-height.u-container--justify-center
+          h2.u-my10 Choose your word!
+          .u-overlay-card-container
+            - Word.random_option_set.each do |word|
+              .c-card.c-card__word.animate-pop-in
+                p.title = word.name
+                p.subtitle = word.difficulty
       canvas
     td
       .chat-container
@@ -42,12 +50,13 @@ table
           #FFFFFF.palette-element.palette-element__color.palette-element__color--white
         .u-container.u-container--align-center
           button.palette-element.palette-element__undo-button.hidden
-            i.fa.fa-undo
+            i.fa.fa-arrow-left
           button.palette-element.palette-element__redo-button.hidden
-            i.fas.fa-redo-alt
+            i.fa.fa-arrow-right
           button.palette-element.palette-element__clear-button
             i.fa.fa-trash
-    td.td--muted
+    td.u-centered.td--muted
+      p#round-information Round #{@user.room.round} of 3
 
 javascript:
   document.querySelector('.clipboard').addEventListener('click', () => {
