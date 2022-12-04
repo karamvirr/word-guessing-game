@@ -276,14 +276,14 @@ import consumer from "channels/consumer"
 
     const toggleUndoVisibility = () => {
       if (undoData.length == 0) {
-        undoButton.classList.add('hidden');
+        undoButton.classList.add('palette-element-hidden');
       } else {
-        undoButton.classList.remove('hidden');
+        undoButton.classList.remove('palette-element-hidden');
       }
       if (redoData.length == 0) {
-        redoButton.classList.add('hidden');
+        redoButton.classList.add('palette-element-hidden');
       } else {
-        redoButton.classList.remove('hidden');
+        redoButton.classList.remove('palette-element-hidden');
       }
     };
 
