@@ -2,7 +2,7 @@ import consumer from "channels/consumer"
 
 (() => {
   const split = window.location.pathname.split('/');
-  if (split[1] === 'staging_area' && typeof split[2] === 'string') {
+  if (split[1] === 'staging_areas' && typeof split[2] === 'string') {
     const slug = split[2];
     const channel = consumer.subscriptions.create({ channel: 'StagingAreaChannel', slug: slug }, {
       // Called when the subscription is ready for use on the server
@@ -17,8 +17,10 @@ import consumer from "channels/consumer"
 
       // Called when there's incoming data on the websocket for this channel
       received(data) {
+        console.log('data receieved', data);
         const range = document.createRange();
         let players = [];
+        document.querySelector('h3').innerText = `Players in room '${data.slug}' (${data.users.length})`
         if (data.users.length > 0) {
           document.querySelector('#room-information').classList.remove('hidden');
           data.users.forEach((user) => {
@@ -65,7 +67,7 @@ import consumer from "channels/consumer"
       // Calls 'StagingAreaChannel#set_name(data)' on the server.
       channel.perform('set_name', { name: name });
       // Now that our name is set, let's hop into the game room! :)
-      window.location.href = `/room/${slug}`;
+      window.location.href = `/rooms/${slug}`;
     };
 
     submitButton.addEventListener('click', (event) => {

@@ -16,12 +16,8 @@ table
     td.canvas-container
       .u-overlay-container.hidden
         .u-container.u-container--column.u-container--align-center.u-container--full-height.u-container--justify-center
-          h2.u-my10 Choose your word!
+          h2.u-my10
           .u-overlay-card-container
-            - Word.random_option_set.each do |word|
-              .c-card.c-card__word.animate-pop-in
-                p.title = word.name
-                p.subtitle = word.difficulty
       canvas
     td
       .chat-container

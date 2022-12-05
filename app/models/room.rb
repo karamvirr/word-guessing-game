@@ -2,15 +2,13 @@ class Room < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
   before_validation :initialize_slug
 
-  has_many :users, ->(user) {
+  has_many :users, -> {
     where.not(name: nil)
   }
 
-  has_many :users_in_staging, -> (user) {
+  has_many :users_in_staging, -> {
     where(name: nil)
-  },
-    class_name: 'User'
-
+  }, class_name: 'User'
 
   def start_game(word)
     update!(current_word: word, game_started: true)

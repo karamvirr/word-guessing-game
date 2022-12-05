@@ -36,6 +36,7 @@ class RoomChannel < ApplicationCable::Channel
       user_id: current_user.id,
       message: "#{current_user.name} has left the chat."
     })
+    refresh_player_roster
     # current_user.delete
   end
 

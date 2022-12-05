@@ -2,7 +2,7 @@ import consumer from "channels/consumer"
 
 (() => {
   const split = window.location.pathname.split('/');
-  if (split[1] === 'room' && typeof split[2] === 'string') {
+  if (split[1] === 'rooms' && typeof split[2] === 'string') {
     const slug = split[2];
     const channel = consumer.subscriptions.create({ channel: 'RoomChannel', slug: slug }, {
       // Called when the subscription is ready for user on the server.
