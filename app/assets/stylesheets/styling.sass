@@ -68,22 +68,41 @@ body
 header
   flex: 0 1 auto
   font-family: 'Lobster Two', cursive
-  padding: 21px 0px
+  padding: 0.85em 0em
   > .title
     display: flex
     justify-content: center
-    > h1
-      user-select: none
-      transition: color 0.5s ease
-      &:hover
-        color: $main-title-color
+
+h1
+  position: relative
+  text-decoration: none
+  user-select: none
+  transition: color 0.3s ease
+  &::before
+    content: ''
+    position: absolute
+    display: block
+    width: 100%
+    height: 2px
+    bottom: 0
+    left: 0
+    background-color: black
+    transform: scaleX(0)
+    transition: transform 0.3s ease
+  &:hover
+    color: $main-title-color
+  &:hover::before
+    transform: scaleX(1)
+    background-color: $main-title-color
+    border-radius: 4px
 
 main
   flex: 1 1 auto
 
 footer
   flex: 0 1 auto
-  padding: 0.85em 0em
+  padding-top: 0.425em
+  padding-bottom: 0.85em
   display: flex
   align-items: center
   justify-content: center
@@ -467,7 +486,7 @@ h2
   &.fa__social
     padding-left: 0.2em
     padding-right: 0.2em
-    transition: all ease 0.3s
+    transition: opacity 0.3s
   &:hover
     opacity: 0.8
   &.fa-linkedin
