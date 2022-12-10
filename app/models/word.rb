@@ -1,7 +1,7 @@
 class Word < ApplicationRecord
-  scope :easy, -> { where(difficulty: "Easy") }
-  scope :medium, -> { where(difficulty: "Medium") }
-  scope :hard, -> { where(difficulty: "Hard") }
+  scope :easy, -> { where(difficulty: "Easy").pluck(:name, :difficulty) }
+  scope :medium, -> { where(difficulty: "Medium").pluck(:name, :difficulty) }
+  scope :hard, -> { where(difficulty: "Hard").pluck(:name, :difficulty) }
 
   ##
   # @return [Word] three random words, one of each difficulty.

@@ -18,29 +18,44 @@ import consumer from "channels/consumer"
       // Called when there's incoming data on the websocket for this channel
       received(data) {
         switch (data.context) {
+          case 'draw':
+            this.draw(data);
+            break;
+          case 'clear_canvas':
+            this.clearCanvas();
+            break;
+          case 'restore_state':
+            this.drawStateFromURL(data.url);
+            break;
           case 'message':
             this.renderMessage(data);
             break;
           case 'typing':
             this.refreshTypingText(data);
             break;
-          case 'refresh_player_roster':
-            this.refreshPlayerRoster(data);
+          case 'refresh_components':
+            this.refreshComponents(data);
             break;
-          case 'draw':
-            this.draw(data);
+          case 'refresh_time_remaining_header':
+            this.refreshTimeRemaining(data.seconds);
             break;
-          case 'restore_state':
-            drawStateFromURL(data.url);
+          case 'hide_overlay':
+            this.hideOverlay();
             break;
-          case 'clear':
-            this.clearCanvas();
+          case 'word_options':
+            this.renderWordOptions(data);
             break;
-          case 'refresh_timer':
-            this.refreshTimeRemaining(data);
+          case 'scoreboard':
+            this.renderScoreboard(data);
             break;
-          case 'award_points':
-            this.awardPoints(data);
+          case 'set_header':
+            this.refreshHeader(data);
+            break;
+          case 'start_timer':
+            startTimer();
+            break;
+          case 'stop_timer':
+            stopTimer();
             break;
         }
       },
@@ -54,104 +69,10 @@ import consumer from "channels/consumer"
         channel.perform('received', data);
       },
 
-      renderMessage(data) {
-        let chat = document.querySelector('.message-container');
-        let message = null;
-        if (data.connection_message) {
-          // connection status message
-          if (data.message.endsWith('has left the chat.')) {
-            document.querySelector(`.player-card[id='${data.user_id}']`).remove();
-          }
-          message = `
-            <li>
-              <p class="message">
-                ${data.message}
-              </p>
-            </li>
-          `;
-        } else if (data.user_name) {
-          // player message
-          message = `
-            <li>
-              <p class="message">
-                <b>${data.user_name}:</b>
-                <span>&nbsp;${data.message}</span>
-              </p>
-            </li>
-          `;
-        } else {
-          // player guess or game start/end message
-          if (data.correct_guess) {
-            // document.querySelector('#chat-input').classList.add('disabled-input');
-          }
-          message = `
-            <li>
-              <p class="message">
-                <b>${data.message}</b>
-              </p>
-            </li>
-          `;
-        }
-        chat.insertAdjacentHTML("beforeend", message);
-        chat.scrollTo({
-          top: chat.scrollHeight,
-          left: 0,
-          behavior: 'smooth'
-        });
-      },
-
-      refreshTypingText(data) {
-        if (data.typing) {
-          typingList.push(data.user_name);
-        } else {
-          typingList = typingList.filter((name) => {
-            return name !== data.user_name;
-          });
-        }
-        let text = '';
-        if (typingList.length > 0) {
-          text = `${typingList.join(', ')} ${typingList.length === 1 ? "is" : "are"} typing...`;
-        }
-        document.querySelector('.typing-message > p > i').innerText = text;
-      },
-
-      refreshPlayerRoster(data) {
-        const range = document.createRange();
-        let players = [];
-        data.users.forEach((user, index) => {
-          let playerCardHTML = `
-            <li class="player-card" id="${user.id}">
-              <div>
-                <p class="position">${index + 1}</p>
-                <p>
-                  <b class="name">${user.name} <span>${((userId === user.id) ? '(you)' : '')}</span></b>
-                  <br>
-                  <span class="score">${user.score} PTS</span>
-                </p>
-              </div>
-              ${(user.id === data.drawer_id) ?
-                `<i class="fa fa-pencil"></i>` : ""}
-            </li>
-          `;
-          const playerCard = range.createContextualFragment(playerCardHTML);
-          players.push(playerCard);
-        });
-        document.querySelector('.player-container').replaceChildren(...players);
-        this.refreshGameOptionVisibility(data.drawer_id);
-      },
-
-      refreshGameOptionVisibility(id) {
-        let startMatchButton = document.querySelector('#start-game');
-        let drawingPalette = document.querySelector('#drawing-palette');
-        if (userId === id) {
-          startMatchButton.classList.remove('hidden');
-          drawingPalette.classList.remove('hidden');
-        } else {
-          startMatchButton.classList.add('hidden');
-          drawingPalette.classList.add('hidden');
-        }
-      },
-
+      // @param {JSON} data - payload containing data to draw data. more
+      //                      specifically, it contains information such as
+      //                      line color, and starting and endpoint points of
+      //                      the path to draw.
       draw(data) {
         ctx.lineWidth = 2;
         ctx.lineCap = 'round';
@@ -165,83 +86,300 @@ import consumer from "channels/consumer"
         ctx.stroke(); // draw it!
       },
 
+      // removes all drawings from the canvas.
       clearCanvas() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       },
 
-      refreshTimeRemaining(data) {
-        gameStarted = (data.seconds !== 60);
-        document.querySelector('#time-remaining').innerText = `${data.seconds}s`;
+      // removes any overlay on top of canvas from view.
+      hideOverlay() {
+        document.querySelector('.u-overlay').classList.add('hidden');
+      },
+
+      // @param {String} url - contains a representation of a canvas snapshot
+      //                       in the img/png format.
+      drawStateFromURL(url) {
+        let img = document.createElement('img');
+        img.src = url;
+        img.addEventListener('load', () => {
+          ctx.drawImage(img, 0, 0);
+        });
+      },
+
+      // @param {JSON} data - payload containing message content.
+      renderMessage(data) {
+        let chat = document.querySelector('.message-container');
+        let message = null;
+        if (data.server_message) {
+          message = `
+            <li>
+              <p class="message" ${true ? `style="color: ${data.color_hex}"` : ""}>
+                <b>${data.message}</b>
+              </p>
+            </li>
+          `;
+        } else if (data.user_name) {
+          // player message
+          message = `
+            <li>
+              <p class="message">
+                <b>${data.user_name}:</b>
+                <span>&nbsp;${data.message}</span>
+              </p>
+            </li>
+          `;
+        }
+        chat.insertAdjacentHTML("beforeend", message);
+        chat.scrollTo({
+          top: chat.scrollHeight,
+          left: 0,
+          behavior: 'smooth'
+        });
+      },
+
+      // @param {JSON} data - payload containing information about a user in
+      //                     the room and whether or not they are currently typing,
+      refreshTypingText(data) {
+        if (data.typing) {
+          usersTyping.push(data.user_name);
+        } else {
+          usersTyping = usersTyping.filter((name) => {
+            return name !== data.user_name;
+          });
+        }
+        let text = '';
+        if (usersTyping.length > 0) {
+          text = `${usersTyping.join(', ')} ${usersTyping.length === 1 ? "is" : "are"} typing...`;
+        }
+        document.querySelector('.typing-message > p > i').innerText = text;
+      },
+
+      // @param {JSON} data - payload containing player data such as name,
+      //                      score, and whether or not they are drawing.
+      refreshComponents(data) {
+        const range = document.createRange();
+        let players = [];
+        data.users.forEach((user, index) => {
+          let playerCardHTML = `
+            <li class="player-card" id="${user.id}"
+              ${(user.guessed_correctly) ? `style="background: #79eb79"` : ""}>
+              <div>
+                <p class="position">${index + 1}</p>
+                <p>
+                  <b class="name">
+                    ${user.name}
+                    <span>${((userId === user.id) ? '(you)' : '')}</span>
+                  </b>
+                  <br>
+                  <span class="score">${user.score} PTS</span>
+                </p>
+              </div>
+              ${(user.id === data.drawer_id) ?
+                `<i class="fa fa-pencil"></i>` : ""}
+            </li>
+          `;
+          const playerCard = range.createContextualFragment(playerCardHTML);
+          players.push(playerCard);
+        });
+        document.querySelector('.player-container').replaceChildren(...players);
+
+        this.updateDisplayedRoundNumberText(data.round);
+        this.toggleStartGameButtonVisibility(data.game_started, data.drawer_id);
+        this.toggleDrawingPaletteVisibility(data.drawer_id);
+        this.toggleChatDisabled(data.guessed_correctly);
+      },
+
+      // @param {Integer} seconds - time remaining for current drawer's turn.
+      refreshTimeRemaining(seconds) {
+        document.querySelector('#time-remaining').innerText = `${seconds}s`;
+      },
+
+      // @param {Boolean} gameStarted - indicates whether or not the game has
+      //                                started. payload containing player data such as name,
+      // @param {Integer} id          - user id of current drawer.
+      toggleStartGameButtonVisibility(gameStarted, id) {
+        let startButton = document.querySelector('#start-game');
+        if (!gameStarted && (id == userId)) {
+          startButton.classList.remove('hidden');
+        } else {
+          startButton.classList.add('hidden');
+        }
+      },
+
+      // @param {Integer} drawerId - user id of the current drawer.
+      toggleDrawingPaletteVisibility(drawerId) {
+        if (drawerId == userId) {
+          document.querySelector('#drawing-palette').classList.remove('hidden');
+        } else {
+          document.querySelector('#drawing-palette').classList.add('hidden');
+        }
+      },
+
+      // @param {Boolean} disable - boolean used to determine whether or not
+      //                            to disable chat input for the current user.
+      toggleChatDisabled(disable) {
+        chatInput.disabled = disable;
+      },
+
+      // @param {Integer} round - current round of the game.
+      updateDisplayedRoundNumberText(data) {
+        const text = `Round ${data} of 3`;
+        document.querySelector('#round-information').innerText = text;
+      },
+
+      // @param {JSON} data - payload containing word data.
+      renderWordOptions(data) {
+        const overlay = document.querySelector('.u-overlay');
+        const range = document.createRange();
+        let header = document.querySelector('.u-overlay h2');
+        let words = [];
+        data.words.forEach((word) => {
+          const wordCardHTML = `
+            <div class="c-card c-card__word animate-pop-in">
+              <p class="title">${word[0]}</p>
+              <p class="subtitle">${word[1]}</p>
+            </div>
+          `;
+          const wordCard = range.createContextualFragment(wordCardHTML);
+          words.push(wordCard);
+        })
+        overlay.classList.remove('hidden');
+        header.innerText = 'Please choose a word!';
+        document.querySelector('.u-card-container').replaceChildren(...words);
+
+        let counter = 25;
+        const wordSelectionTimer = setInterval(() => {
+          if (counter <= 10) {
+            header.innerText = `Please choose a word in ${counter}s!`;
+          }
+          if (counter === 0) {
+            clearInterval(wordSelectionTimer);
+            overlay.classList.add('hidden');
+            channel.emit({ context: 'end_turn' });
+          }
+          counter -= 1;
+        }, 1000);
+
+        document.querySelectorAll('.c-card__word').forEach((element) => {
+          element.addEventListener('click', (event) => {
+            clearInterval(wordSelectionTimer);
+            overlay.classList.add('hidden');
+            channel.emit({
+              context: 'start_turn',
+              word: event.target.querySelector('p.title').innerText
+            });
+          });
+        });
+      },
+
+      // @param {JSON} data - payload containing scoreboard data.
+      renderScoreboard(data) {
+        const overlay = document.querySelector('.u-overlay');
+        const range = document.createRange();
+        let header = document.querySelector('.u-overlay h2');
+        let users = [];
+        data.users.forEach((user) => {
+          const userCardHTML = `
+            <div class="c-card animate-pop-in">
+              <p class="title">${user.name}</p>
+              <p class="subtitle">${user.score} PTS</p>
+            </div>
+          `;
+          const userCard = range.createContextualFragment(userCardHTML);
+          users.push(userCard);
+        })
+        overlay.classList.remove('hidden');
+        header.innerText = 'Thanks for playing!';
+        document.querySelector('.u-card-container').replaceChildren(...users);
+      },
+
+      // @param {JSON} data - payload containing header text information.
+      refreshHeader(data) {
+        const text = (data.drawer_id == userId) ? data.word : data.hint;
+        document.querySelector('h2#word').innerText = text;
       }
     });
 
     /* Utilities */
-    let gameStarted = false;
+    const username = document.querySelector('tr.second-row > td').id;
     const userId = parseInt(document.querySelector('.player-container').id);
-    const getNameFromId = (id) => {
-      return document
-        .querySelector(`.player-card[id='${id}'] > div > p > b`)
-        .innerHTML.replace(/ <span>.*<\/span>/g, '');
+    const getTimeRemaining = () => {
+      return parseInt(document.querySelector('#time-remaining').innerText);
     };
 
-    /* Palette */
+    /* Messaging */
+    const chatInput = document.querySelector('input#chat_input');
+    let usersTyping = [];
+    let isTyping = false;
+    const emitTypingEvent = () => {
+      channel.emit({
+        context: 'typing',
+        user_name: username,
+        typing: isTyping
+      });
+    };
+
+    chatInput.addEventListener('keydown', (event) => {
+      if (!(event.code.includes('Arrow') || isTyping)) {
+        isTyping = true;
+        emitTypingEvent();
+        setTimeout(() => {
+          isTyping = false;
+          emitTypingEvent();
+        }, 1000);
+      }
+      if (event.code === 'Enter') {
+        event.preventDefault();
+        const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
+        if (sanitizedInput.length > 0) {
+          channel.emit({
+            context: 'message',
+            user_id: userId,
+            user_name: username,
+            message: sanitizedInput
+          });
+          event.target.value = '';
+        }
+      }
+    });
+
+    /* Game mechanics */
+    const startGameButton = document.querySelector('#start-game');
+    startGameButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      startGameButton.classList.add('hidden');
+      channel.emit({ context: 'start_game' });
+    });
+
+    let turnTimer = null;
+    const startTimer = () => {
+      if (turnTimer === null) {
+        turnTimer = setInterval(() => {
+          channel.emit({ context: 'decrement_time_remaining' });
+        }, 1000);
+      }
+    };
+    const stopTimer = () => {
+      clearInterval(turnTimer);
+      turnTimer = null;
+    };
+
+    /* Undo/Redo/Clear Drawing Buttons */
     const clearButton = document.querySelector('.palette-element__clear-button');
-    const paintColorOptions = document.querySelectorAll('.palette-element__color');
-    let selectedColorOption = paintColorOptions[0];
-    selectedColorOption.classList.toggle('palette-element--selected');
-
-    const getSelectedColor = () => {
-      return selectedColorOption ? selectedColorOption.id : 'black';
-    };
-
-    paintColorOptions.forEach((element) => {
-      element.addEventListener('click', (event) => {
-        selectedColorOption.classList.toggle('palette-element--selected');
-        selectedColorOption = event.target;
-        selectedColorOption.classList.toggle('palette-element--selected');
-      })
-    });
-    clearButton.addEventListener('click', () => {
-      redoData = [];
-      undoData = [];
-      toggleUndoVisibility();
-
-      channel.emit({ context: 'clear' })
-    });
-
-    /* Drawing */
-    let canvas = document.querySelector('canvas');
-    let offset = canvas.getBoundingClientRect();
-    let ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    let p1 = { x: 0, y: 0 }
-    let p2 = { x: 0, y: 0 }
-
-    // used for undo/redo functionality
-    let captureCanvasState = false;
-
-    // Scales point coordinates so that it's relative to canvas element.
-    // 'point' argument is modified.
-    const scalePoint = (point, event) => {
-      const scaleX = canvas.width / offset.width;
-      const scaleY = canvas.height / offset.height;
-
-      point.x = (event.clientX - offset.left) * scaleX;
-      point.y = (event.clientY - offset.top) * scaleY;
-    };
-
-    // Returns distance between points a and b
-    // pre: arguments are objects with x, y values.
-    const pointDistance = (a, b) => {
-      return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-    };
-
     let undoButton = document.querySelector('.palette-element__undo-button');
     let redoButton = document.querySelector('.palette-element__redo-button');
     let undoData = []; // used as a stack.
     let redoData = []; // used as a queue.
 
-    const saveState = (event) => {
+    clearButton.addEventListener('click', () => {
+      redoData = [];
+      undoData = [];
+      toggleUndoVisibility();
+
+      channel.emit({ context: 'clear_canvas' });
+    });
+
+    const saveState = () => {
       redoData = [];
       undoData.push(canvas.toDataURL());
       toggleUndoVisibility();
@@ -250,7 +388,7 @@ import consumer from "channels/consumer"
     // pre: undoData.length >= 1
     const undoState = () => {
       redoData.unshift(undoData.pop());
-      channel.emit({ context: 'clear' });
+      channel.emit({ context: 'clear_canvas' });
       if (undoData.length > 0) {
         channel.emit({ context: 'restore_state', url: undoData[undoData.length - 1] })
       }
@@ -261,17 +399,9 @@ import consumer from "channels/consumer"
     const redoState = () => {
       const dataURL = redoData.shift();
       undoData.push(dataURL);
-      channel.emit({ context: 'clear' });
+      channel.emit({ context: 'clear_canvas' });
       channel.emit({ context: 'restore_state', url: dataURL })
       toggleUndoVisibility();
-    };
-
-    const drawStateFromURL = (url) => {
-      let img = document.createElement('img');
-      img.src = url;
-      img.addEventListener('load', () => {
-        ctx.drawImage(img, 0, 0);
-      });
     };
 
     const toggleUndoVisibility = () => {
@@ -290,11 +420,59 @@ import consumer from "channels/consumer"
     undoButton.addEventListener('click', undoState);
     redoButton.addEventListener('click', redoState);
 
+    /* Color Palette */
+    const paintColorOptions = document.querySelectorAll('.palette-element__color');
+    let selectedColorOption = paintColorOptions[0];
+    selectedColorOption.classList.toggle('palette-element--selected');
+
+    const getSelectedColor = () => {
+      return selectedColorOption ? selectedColorOption.id : '#000000';
+    };
+
+    paintColorOptions.forEach((element) => {
+      element.addEventListener('click', (event) => {
+        selectedColorOption.classList.toggle('palette-element--selected');
+        selectedColorOption = event.target;
+        selectedColorOption.classList.toggle('palette-element--selected');
+      })
+    });
+
+    /* Drawing */
+    let canvas = document.querySelector('canvas');
+    let offset = canvas.getBoundingClientRect();
+    let ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let p1 = { x: 0, y: 0 }
+    let p2 = { x: 0, y: 0 }
+
+    // used for undo/redo functionality
+    let captureCanvasState = false;
+
+    // scales point coordinates so that it's relative to canvas element.
+    // note: 'point' argument is modified during execution.
+    const scalePoint = (point, event) => {
+      const scaleX = canvas.width / offset.width;
+      const scaleY = canvas.height / offset.height;
+
+      point.x = (event.clientX - offset.left) * scaleX;
+      point.y = (event.clientY - offset.top) * scaleY;
+    };
+
+    // Returns distance between points a and b
+    // pre: arguments are objects with x, y values.
+    const pointDistance = (a, b) => {
+      return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+    };
 
     window.addEventListener("resize", () => {
       offset = canvas.getBoundingClientRect();
     });
 
+    canvas.addEventListener('mousedown', (event) => {
+      isDrawing = true;
+      offset = canvas.getBoundingClientRect();
+      scalePoint(p1, event);
+    });
     canvas.addEventListener('mouseleave', () => {
       isDrawing = false;
     });
@@ -304,11 +482,6 @@ import consumer from "channels/consumer"
         saveState();
       }
       captureCanvasState = false;
-    });
-    canvas.addEventListener('mousedown', (event) => {
-      isDrawing = true;
-      offset = canvas.getBoundingClientRect();
-      scalePoint(p1, event);
     });
     canvas.addEventListener('mousemove', (event) => {
       if (isDrawing) {
@@ -327,104 +500,6 @@ import consumer from "channels/consumer"
           p1.y = p2.y;
         }
       }
-    });
-
-    /* Messaging */
-    const chatInput = document.querySelector('input#chat_input');
-    let typingList = [];
-    let isTyping = false;
-
-    chatInput.addEventListener('keydown', (event) => {
-      if (!isTyping) {
-        isTyping = true;
-        channel.emit({
-          context: 'typing',
-          user_name: getNameFromId(userId),
-          typing: isTyping
-        });
-        setTimeout(() => {
-          isTyping = false;
-          channel.emit({
-            context: 'typing',
-            user_name: getNameFromId(userId),
-            typing: isTyping
-          });
-        }, 1000);
-      }
-
-      if (event.code === 'Enter') {
-        const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
-        event.preventDefault();
-        if (sanitizedInput.length > 0) {
-          // If the drawing palette is visible, it means that it's our turn to draw.
-          // Therefore, anything we type in the chat should NOT be counted as a guess.
-          const isDrawing = !document.querySelector('#drawing-palette').classList.contains('hidden');
-          isTyping = false;
-          channel.emit({
-            context: 'typing',
-            user_name: getNameFromId(userId),
-            typing: isTyping
-          });
-          channel.emit({
-            context: 'message',
-            user_id: userId,
-            user_name: getNameFromId(userId),
-            message: sanitizedInput,
-            is_guess: (gameStarted && !isDrawing),
-            point_award: getSecondsRemaining(),
-          });
-          event.target.value = '';
-        }
-      }
-    });
-
-    /* Turn based mechanics */
-    const wordOptionOverlay = document.querySelector('.u-overlay-container');
-    const wordOptions = document.querySelectorAll('.c-card.c-card__word');
-    const getSecondsRemaining = () => {
-      return parseInt(document.querySelector('#time-remaining').innerText);
-    };
-    const handleWordSelection = (event) => {
-      channel.emit({
-        context: 'message',
-        message: `${getNameFromId(userId)} is now drawing.`,
-      });
-
-      wordOptionOverlay.classList.add('hidden');
-      document.querySelector('#start-game').classList.add('hidden');
-
-      const word = event.target.querySelector('p.title').innerText;
-      channel.emit({ context: 'start', word: word });
-
-      console.log('start');
-      gameStarted = true;
-      const interval = setInterval(() => {
-        // This is being placed in the interval so that it will set correctly if
-        // the user currently drawing refreshes their tab.
-        gameStarted = true;
-        console.log('tic');
-        let seconds = getSecondsRemaining();
-        if (seconds === 0) {
-          gameStarted = false;
-          console.log('stop');
-          window.clearInterval(interval);
-          channel.emit({ context: 'stop' })
-        } else {
-          channel.emit({ context: 'refresh_timer', seconds: (seconds - 1) })
-        }
-      }, 1000);
-    };
-
-    wordOptions.forEach((element) => {
-      element.addEventListener('click', handleWordSelection);
-    });
-    document.querySelector('#start-game').addEventListener('click', (event) => {
-      event.preventDefault();
-      wordOptionOverlay.classList.remove('hidden');
-      channel.emit({
-        context: 'message',
-        message: `${getNameFromId(userId)} is choosing a word.`,
-      });
     });
   }
 })();

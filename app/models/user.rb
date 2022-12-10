@@ -6,6 +6,10 @@ class User < ApplicationRecord
     update!(score: 0)
   end
 
+  def set_as_guessed_correctly
+    update!(guessed_correctly: true)
+  end
+
   def set_score(score)
     update!(score: score)
   end

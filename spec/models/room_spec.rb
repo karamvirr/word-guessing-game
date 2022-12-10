@@ -16,24 +16,24 @@ RSpec.describe Room, type: :model do
   end
 
   context 'instance methods' do
-    describe 'start_game' do
+    describe 'start_turn' do
       it 'correctly sets attribute values' do
         user_a = create :user, room: subject
         user_b = create :user, room: subject
-        subject.start_game('orange')
+        subject.start_turn('orange')
 
         expect(subject.current_word).to(eq('orange'))
         expect(subject.game_started?).to(be(true))
       end
     end
 
-    describe 'end_game' do
+    describe 'end_turn' do
       it 'correctly sets attribute values' do
         user_a = create :user, room: subject
         user_b = create :user, room: subject
 
-        subject.start_game('orange')
-        subject.end_game
+        subject.start_turn('orange')
+        subject.end_turn
         expect(subject.current_word).to(be_nil)
         expect(subject.game_started?).to(be(false))
       end
@@ -74,28 +74,28 @@ RSpec.describe Room, type: :model do
       end
     end
 
-    # describe 'remove_user!' do
-    #   describe 'correctly handles user removal when' do
-    #     it 'given user is nil' do
-    #       expect(subject.remove_user!(nil)).to(eq(nil))
-    #     end
+    describe 'remove_user' do
+      describe 'correctly handles user removal when' do
+        it 'given user is nil' do
+          expect(subject.remove_user(nil)).to(eq(nil))
+        end
 
-    #     it 'given user is not a user in the room' do
-    #       some_other_room = create :room
-    #       create :user, room: some_other_room
+        it 'given user is not a user in the room' do
+          some_other_room = create :room
+          create :user, room: some_other_room
 
-    #       expect(subject.remove_user!(nil)).to(eq(nil))
-    #     end
+          expect(subject.remove_user(nil)).to(eq(nil))
+        end
 
-    #     it 'given user is a user in the room' do
-    #       user = create :user, room: subject
-    #       count = subject.users.count
-    #       result = subject.remove_user!(user)
+        it 'given user is a user in the room' do
+          user = create :user, room: subject
+          count = subject.users.count
+          result = subject.remove_user(user)
 
-    #       expect(result).to(eq(user))
-    #       expect(subject.users.count).to(eq(count - 1))
-    #     end
-    #   end
-    # end
+          expect(result).to(eq(user))
+          expect(subject.users.count).to(eq(count - 1))
+        end
+      end
+    end
   end
 end

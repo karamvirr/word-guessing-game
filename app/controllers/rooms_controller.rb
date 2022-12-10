@@ -10,10 +10,10 @@ class RoomsController < ApplicationController
   end
 
   def show
-    room = Room.find_by(slug: params[:slug])
+    @room = Room.find_by(slug: params[:slug])
     # Redirect user back to root path if the slug provided does not match to
     # an active room.
-    if room.nil?
+    if @room.nil?
       flash[:error] = "Room code '#{params[:slug]}' is invalid."
       redirect_to(root_path)
       return
@@ -23,9 +23,9 @@ class RoomsController < ApplicationController
     # Redirect user to staging area if user information is not set.
     if @user.nil?
       # Most likely the cookie :user_id is not set.
-      @user = User.create!(room: room)
+      @user = User.create!(room: @room)
       cookies.encrypted[:user_id] = @user.id
-      redirect_to(staging_area_path(slug: room.slug))
+      redirect_to(staging_area_path(slug: @room.slug))
     end
   end
 end
