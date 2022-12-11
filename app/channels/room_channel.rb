@@ -79,6 +79,12 @@ class RoomChannel < ApplicationCable::Channel
       )
       return
     when 'end_turn'
+      emit({
+        context: 'set_header',
+        hint: current_user.room.current_word,
+        word: current_user.room.current_word,
+        drawer_id: current_user.room.drawer_id
+      })
       current_user.room.end_turn
       ActionCable.server.broadcast(
         user_broadcast_identifier(current_user.room.drawer_id),

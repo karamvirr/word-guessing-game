@@ -6,9 +6,9 @@ table
           code copy room link
           button
             i.fa.fa-clipboard
-    td.second-column.u-centered.td--muted
+    td.second-column.u-centered.td--muted.unselectable
       h2#word #{(@room.drawer_id == @user.id) ? @room.current_word : @room.hint}
-    td.third-column.u-centered.td--muted
+    td.third-column.u-centered.td--muted.unselectable
       h2#time-remaining #{@room.time_remaining}s
   tr.second-row
     td id="#{@user.name}"
@@ -51,7 +51,7 @@ table
             i.fa.fa-arrow-right
           button.palette-element.palette-element__clear-button
             i.fa.fa-trash
-    td.u-centered.td--muted
+    td.u-centered.td--muted.unselectable
       p#round-information Round #{@room.round} of 3
 
 javascript:

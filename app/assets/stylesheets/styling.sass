@@ -56,6 +56,13 @@ $overlay-gray-color: #C5C5C5
   margin: 0
   padding: 0
 
+.unselectable
+  -webkit-user-select: none /* Safari */
+  -moz-user-select: none /* Old versions of Firefox */
+  -ms-user-select: none /* Internet Explorer/Edge */
+  user-select: none /* Chrome, Edge, Opera and Firefox */
+  cursor: default
+
 body, input
   font-family: 'Nunito', sans-serif
 
@@ -76,7 +83,6 @@ header
 h1
   position: relative
   text-decoration: none
-  user-select: none
   &::before
     content: ''
     position: absolute
@@ -222,9 +228,6 @@ td
     width: 100%
     transform: translate(0%, -50%)
     letter-spacing: 0.25em
-  p#round-information
-  h2#word, p#round-information
-    user-select: none
 
 .center-vertical-line
   position: absolute
@@ -262,6 +265,7 @@ h2
 .clipboard
   display: flex
   justify-content: center
+  z-index: 1
   code
     background-color: $clipboard-color
     color: white
@@ -274,7 +278,7 @@ h2
     padding: 5px
     padding-left: 8px
     padding-right: 8px
-    border-left: 2px solid gray
+    border: 2px solid gray
     color: white
     cursor: pointer
 
@@ -339,7 +343,8 @@ h2
     > input
       width: 100%
       height: 100%
-      padding: 0px 5px
+      padding: 0px 0.75em
+      border: 1px solid $border-color
 
 .disabled-input
   pointer-events: none

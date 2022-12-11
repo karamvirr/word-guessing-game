@@ -229,6 +229,9 @@ import consumer from "channels/consumer"
 
       // @param {JSON} data - payload containing word data.
       renderWordOptions(data) {
+        undoData = [];
+        redoData = [];
+        toggleUndoRedoVisibility();
         const overlay = document.querySelector('.u-overlay');
         const range = document.createRange();
         let header = document.querySelector('.u-overlay h2');
@@ -303,9 +306,6 @@ import consumer from "channels/consumer"
     /* Utilities */
     const username = document.querySelector('tr.second-row > td').id;
     const userId = parseInt(document.querySelector('.player-container').id);
-    const getTimeRemaining = () => {
-      return parseInt(document.querySelector('#time-remaining').innerText);
-    };
 
     /* Messaging */
     const chatInput = document.querySelector('input#chat_input');
@@ -374,7 +374,7 @@ import consumer from "channels/consumer"
     clearButton.addEventListener('click', () => {
       redoData = [];
       undoData = [];
-      toggleUndoVisibility();
+      toggleUndoRedoVisibility();
 
       channel.emit({ context: 'clear_canvas' });
     });
@@ -382,7 +382,7 @@ import consumer from "channels/consumer"
     const saveState = () => {
       redoData = [];
       undoData.push(canvas.toDataURL());
-      toggleUndoVisibility();
+      toggleUndoRedoVisibility();
     };
 
     // pre: undoData.length >= 1
@@ -392,7 +392,7 @@ import consumer from "channels/consumer"
       if (undoData.length > 0) {
         channel.emit({ context: 'restore_state', url: undoData[undoData.length - 1] })
       }
-      toggleUndoVisibility();
+      toggleUndoRedoVisibility();
     };
 
     // pre: redoData.length >= 1
@@ -401,10 +401,10 @@ import consumer from "channels/consumer"
       undoData.push(dataURL);
       channel.emit({ context: 'clear_canvas' });
       channel.emit({ context: 'restore_state', url: dataURL })
-      toggleUndoVisibility();
+      toggleUndoRedoVisibility();
     };
 
-    const toggleUndoVisibility = () => {
+    const toggleUndoRedoVisibility = () => {
       if (undoData.length == 0) {
         undoButton.classList.add('palette-element-hidden');
       } else {
