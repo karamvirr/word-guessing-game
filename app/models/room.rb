@@ -37,13 +37,13 @@ class Room < ApplicationRecord
   def start_turn(word)
     word = word.strip.downcase
     update!(current_word: word, hint: word.gsub(/[\w]/, '-'))
+    self.users.each do |user|
+      user.update!(guessed_correctly: false)
+    end
   end
 
   def end_turn
     update!(current_word: nil, hint: nil, time_remaining: TIME_LIMIT)
-    self.users.each do |user|
-      user.update!(guessed_correctly: false)
-    end
   end
 
   def start_game

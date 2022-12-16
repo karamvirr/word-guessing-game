@@ -7,12 +7,13 @@ module ApplicationCable
     end
 
     def disconnect
-      # self.current_user.destroy!
-      # cookies.delete :user_id
+      cookies.delete(:user_id)
     end
 
     private
       def find_verified_user
+        return nil if cookies.encrypted[:user_id].nil?
+
         User.find_by(id: cookies.encrypted[:user_id])
       end
   end

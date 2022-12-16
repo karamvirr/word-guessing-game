@@ -111,6 +111,9 @@ import consumer from "channels/consumer"
         let chat = document.querySelector('.message-container');
         let message = null;
         if (data.server_message) {
+          if (data.message.endsWith('has left the chat.')) {
+            document.querySelector(`.player-card[id='${data.user_id}']`).remove();
+          }
           message = `
             <li>
               <p class="message" ${true ? `style="color: ${data.color_hex}"` : ""}>
@@ -180,13 +183,15 @@ import consumer from "channels/consumer"
           `;
           const playerCard = range.createContextualFragment(playerCardHTML);
           players.push(playerCard);
+          if (user.id === userId) {
+            this.toggleChatDisabled(user.guessed_correctly);
+          }
         });
         document.querySelector('.player-container').replaceChildren(...players);
 
         this.updateDisplayedRoundNumberText(data.round);
         this.toggleStartGameButtonVisibility(data.game_started, data.drawer_id);
         this.toggleDrawingPaletteVisibility(data.drawer_id);
-        this.toggleChatDisabled(data.guessed_correctly);
       },
 
       // @param {Integer} seconds - time remaining for current drawer's turn.

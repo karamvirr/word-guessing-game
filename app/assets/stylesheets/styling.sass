@@ -162,7 +162,7 @@ header, footer
   display: flex
   justify-content: center
   > input
-    width: 20vw
+    width: 25vw
     padding: 10px
     border: 2px solid $border-color
     border-radius: 10px 0 0 10px
@@ -514,3 +514,7 @@ h2
 @keyframes pop-in
   50%
     transform: scale(1.075)
+
+@media (max-width: 413px)
+  input#search_game_room_input, input#name_input
+    width: 50vw

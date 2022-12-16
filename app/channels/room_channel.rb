@@ -17,13 +17,14 @@ class RoomChannel < ApplicationCable::Channel
   # Called once the consumer has cut its cable connection.
   # Any cleanup needed when channel is unsubscribed.
   def unsubscribed
-    refresh_components
     emit({
       context: 'message',
       server_message: true,
       color_hex: generate_random_color,
+      user_id: current_user.id,
       message: "#{current_user.name} has left the chat."
     })
+    current_user.destroy!
   end
 
   # Called when there's incoming data on the websocket for this channel from a
@@ -204,7 +205,6 @@ private
       users: [],
       drawer_id: current_user.room.drawer_id,
       game_started: current_user.room.game_started?,
-      guessed_correctly: current_user.guessed_correctly,
       round: current_user.room.round
     }
     current_user.room.users.each do |user|
