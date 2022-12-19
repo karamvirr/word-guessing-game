@@ -66,8 +66,14 @@ import consumer from "channels/consumer"
       }
       // Calls 'StagingAreaChannel#set_name(data)' on the server.
       channel.perform('set_name', { name: name });
-      // Now that our name is set, let's hop into the game room! :)
-      window.location.href = `/rooms/${slug}`;
+      // For whatever reason, on Firefox the re-direct would occur before the
+      // logic in StagingAreaChannel#set_name(data) completed. This would yield
+      // in the user joining a room with a name of 'nil'. To remedy this, I
+      // added a slight re-direct delay.
+      setTimeout(() => {
+        // Now that our name is set, let's hop into the game room! :)
+        window.location.href = `/rooms/${slug}`;
+      }, 10);
     };
 
     submitButton.addEventListener('click', (event) => {

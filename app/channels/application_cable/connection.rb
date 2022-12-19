@@ -12,9 +12,8 @@ module ApplicationCable
 
     private
       def find_verified_user
-        return nil if cookies.encrypted[:user_id].nil?
-
-        User.find_by(id: cookies.encrypted[:user_id])
+        User.find_by(id: cookies.encrypted[:user_id]) ||
+          reject_unauthorized_connection
       end
   end
 end

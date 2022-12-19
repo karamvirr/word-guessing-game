@@ -209,6 +209,7 @@ tr
     height: 15%
 
 td
+  position: relative
   border: 1px solid $border-color
   background-color: white
   &.td--muted
@@ -283,6 +284,9 @@ h2
     cursor: pointer
 
 .player-container
+  position: absolute
+  top: 0
+  width: 100%
   height: 100%
   overflow-y: auto
 
@@ -316,8 +320,10 @@ h2
   word-break: break-word
 
 .chat-container
+  position: absolute
+  top: 0
+  width: 100%
   height: 100%
-  overflow: auto
   > .message-container
     height: 87%
     max-height: 87%
