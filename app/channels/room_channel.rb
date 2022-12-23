@@ -68,7 +68,7 @@ class RoomChannel < ApplicationCable::Channel
       emit({ context: 'scoreboard', users: current_user.room.scoreboard })
       return
     when 'start_turn'
-      current_user.room.start_turn(data[:word])
+      current_user.room.start_turn(data[:word].downcase)
       emit({ context: 'clear_canvas' })
       refresh_components
       emit({

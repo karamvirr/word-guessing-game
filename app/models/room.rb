@@ -13,16 +13,13 @@ class Room < ApplicationRecord
     where(name: nil)
   }, class_name: 'User'
 
-  scope :scoreboard, -> {
-    users.order("score DESC")
-  }
-
   def scoreboard
     self.users.sort_by{ |u| -u.score }
   end
 
   def update_hint(guess)
-    return if self.current_word.nil?
+    guess = guess.strip.downcase
+    return if self.current_word.nil? || guess.include?(self.current_word)
 
     updated_hint = self.hint
     guess.each_char.with_index do |char, index|
@@ -32,18 +29,6 @@ class Room < ApplicationRecord
     end
 
     update!(hint: updated_hint)
-  end
-
-  def start_turn(word)
-    word = word.strip.downcase
-    update!(current_word: word, hint: word.gsub(/[\w]/, '-'))
-    self.users.each do |user|
-      user.update!(guessed_correctly: false)
-    end
-  end
-
-  def end_turn
-    update!(current_word: nil, hint: nil, time_remaining: TIME_LIMIT)
   end
 
   def start_game
@@ -56,6 +41,18 @@ class Room < ApplicationRecord
   def end_game
     self.end_turn
     update!(round: 1, game_started: false)
+  end
+
+  def start_turn(word)
+    word = word.strip.downcase
+    update!(current_word: word, hint: word.gsub(/[\w]/, '-'))
+    self.users.each do |user|
+      user.update!(guessed_correctly: false)
+    end
+  end
+
+  def end_turn
+    update!(current_word: nil, hint: nil, time_remaining: TIME_LIMIT)
   end
 
   def everyone_guessed_correctly?
@@ -71,17 +68,17 @@ class Room < ApplicationRecord
     self.current_word == guess
   end
 
+  def decrement_time_remaining
+    seconds = self.time_remaining
+    update!(time_remaining: (seconds - 1))
+  end
+
   # Returns the user removed from room.
   def remove_user(user)
     return user if user.nil? || !self.users.include?(user)
 
     # argument is passed-by-value
     self.users.find_by(id: user.id).destroy!
-  end
-
-  def decrement_time_remaining
-    seconds = self.time_remaining
-    update!(time_remaining: (seconds - 1))
   end
 
   # Sets and returns the user model record of the next drawer.

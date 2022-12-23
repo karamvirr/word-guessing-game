@@ -3,16 +3,16 @@ class User < ApplicationRecord
   after_commit :enter_room_broadcast, if: :saved_change_to_name?
   after_destroy :room_clean_up
 
-  def clear_score
-    update!(score: 0)
-  end
-
   def set_as_guessed_correctly
     update!(guessed_correctly: true)
   end
 
   def set_score(score)
     update!(score: score)
+  end
+
+  def clear_score
+    set_score(0)
   end
 
   def in_staging?
