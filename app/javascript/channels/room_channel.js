@@ -74,7 +74,7 @@ import consumer from "channels/consumer"
       //                      line color, and starting and endpoint points of
       //                      the path to draw.
       draw(data) {
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = `#${data.color}`;
@@ -444,6 +444,8 @@ import consumer from "channels/consumer"
 
     /* Drawing */
     let canvas = document.querySelector('canvas');
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
     let offset = canvas.getBoundingClientRect();
     let ctx = canvas.getContext('2d');
     let isDrawing = false;
