@@ -42,8 +42,13 @@ Rails.application.configure do
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
-  config.action_cable.url = "wss://draw-and-guess-game-website.herokuapp.com/cable"
-  config.action_cable.allowed_request_origins = [ "https://draw-and-guess-game-website.herokuapp.com", /http:\/\/draw-and-guess-game-website.herokuapp.com.*/ ]
+  config.action_cable.url = "wss://www.doodleit.io/cable"
+  config.action_cable.allowed_request_origins = [
+    "https://doodleit.io",
+    /http:\/\/doodleit.io.*/,
+    "https://www.doodleit.io",
+    /http:\/\/www.doodleit.io.*/
+  ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
