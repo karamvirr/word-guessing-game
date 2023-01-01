@@ -55,21 +55,43 @@ table
       p#round-information Round #{@room.round} of 3
 
 javascript:
+  const copyToClipboard = (text) => {
+    if (window.clipboardData && window.clipboardData.setData) {
+      // Internet Explorer-specific code path to prevent textarea being shown
+      // while dialog is visible.
+      return window.clipboardData.setData("Text", text);
+    } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+      let textarea = document.createElement("textarea");
+      textarea.textContent = text;
+      // Prevent scrolling to bottom of page in Microsoft Edge.
+      textarea.style.position = "fixed";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        // Security exception may be thrown by some browsers.
+        return document.execCommand("copy");
+      } catch (ex) {
+        console.warn("Copy to clipboard failed.", ex);
+        return prompt("Copy to clipboard: Ctrl+C, Enter", text);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+
   document.querySelector('.clipboard').addEventListener('click', () => {
-    navigator.clipboard.writeText(window.location.href)
-      .then(() => {
-        let buttonIcon = document.querySelector('.clipboard > button > i');
-        let label = document.querySelector('.clipboard > code');
-        buttonIcon.classList.remove('fa-clipboard');
-        buttonIcon.classList.add('fa-check');
-        buttonIcon.classList.add('success');
-        label.innerText = 'copied!';
-        setTimeout(() => {
-          buttonIcon.classList.remove('fa-check');
-          buttonIcon.classList.remove('success');
-          buttonIcon.classList.add('fa-clipboard');
-          label.innerText = 'copy room link';
-        }, 2000);
-      })
-      .catch((err) => console.error(`Error copying to clipboard: ${err}`));
+    if (copyToClipboard(window.location.href)) {
+      let buttonIcon = document.querySelector('.clipboard > button > i');
+      let label = document.querySelector('.clipboard > code');
+      buttonIcon.classList.toggle('fa-clipboard');
+      buttonIcon.classList.toggle('fa-check');
+      buttonIcon.classList.toggle('success');
+      label.innerText = 'copied!';
+      setTimeout(() => {
+        buttonIcon.classList.toggle('fa-check');
+        buttonIcon.classList.toggle('success');
+        buttonIcon.classList.toggle('fa-clipboard');
+        label.innerText = 'copy room link';
+      }, 2000);
+    }
   });
