@@ -24,6 +24,9 @@ import consumer from "channels/consumer"
           case 'clear_canvas':
             this.clearCanvas();
             break;
+          case 'flood_fill':
+            this.drawStateFromURL(data.url);
+            break;
           case 'restore_state':
             this.drawStateFromURL(data.url);
             break;
@@ -77,8 +80,7 @@ import consumer from "channels/consumer"
         ctx.lineWidth = 5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = `#${data.color}`;
-
+        ctx.strokeStyle = data.color;
 
         ctx.beginPath();
         ctx.moveTo(data.start_x, data.start_y);
@@ -371,11 +373,15 @@ import consumer from "channels/consumer"
 
     /* Undo/Redo/Clear Drawing Buttons */
     const clearButton = document.querySelector('.palette-element__clear-button');
+    const fillButton = document.querySelector('.palette-element__fill-button');
     let undoButton = document.querySelector('.palette-element__undo-button');
     let redoButton = document.querySelector('.palette-element__redo-button');
     let undoData = []; // used as a stack.
     let redoData = []; // used as a queue.
 
+    fillButton.addEventListener('click', () => {
+      fillButton.classList.toggle('palette-element--selected');
+    });
     clearButton.addEventListener('click', () => {
       redoData = [];
       undoData = [];
@@ -431,7 +437,7 @@ import consumer from "channels/consumer"
     selectedColorOption.classList.toggle('palette-element--selected');
 
     const getSelectedColor = () => {
-      return selectedColorOption ? selectedColorOption.id : '#000000';
+      return selectedColorOption ? `#${selectedColorOption.id}` : '#000000';
     };
 
     paintColorOptions.forEach((element) => {
@@ -476,9 +482,23 @@ import consumer from "channels/consumer"
     });
 
     canvas.addEventListener('mousedown', (event) => {
-      isDrawing = true;
-      offset = canvas.getBoundingClientRect();
-      scalePoint(p1, event);
+      if (fillButton.classList.contains('palette-element--selected')) {
+        let fillStart = {};
+        scalePoint(fillStart, event);
+        fillStart.x = parseInt(fillStart.x);
+        fillStart.y = parseInt(fillStart.y);
+
+        const hex = getSelectedColor();
+        floodFill(fillStart, hex);
+
+        saveState();
+        channel.emit({ context: 'flood_fill', url: undoData[undoData.length - 1] })
+        fillButton.classList.remove('palette-element--selected');
+      } else {
+        isDrawing = true;
+        offset = canvas.getBoundingClientRect();
+        scalePoint(p1, event);
+      }
     });
     canvas.addEventListener('mouseleave', () => {
       isDrawing = false;
@@ -508,5 +528,60 @@ import consumer from "channels/consumer"
         }
       }
     });
+
+    const getPixelHexColor = (pixelData, point) => {
+      if (point.x < 0 || point.y < 0 ||
+          point.x >= pixelData.width || point.y >= pixelData.height) {
+        return null;
+      }
+      return pixelData.data[pixelData.width * point.y + point.x];
+    };
+
+    const setPixelHexColor = (pixelData, point, color) => {
+      let index = (point.x + point.y * pixelData.width);
+      pixelData.data[index] = color;
+    };
+
+    const floodFill = (startingPoint, fillHexColor) => {
+      // read the pixels in the canvas
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      // wrap Uint32Array around pixels so that it is easier to manipulate.
+      let pixelData = {
+        height: imageData.height,
+        width: imageData.width,
+        data: new Uint32Array(imageData.data.buffer)
+      };
+      for(let i = 0; i < pixelData.data.length; i++) {
+        // setting all 'empty'pixel channels to '255'.
+        if (pixelData.data[i] === 0) {
+          pixelData.data[i] = 255;
+        }
+      }
+
+      // rearrange to 32-bit little-endian byte order.
+      const color = Number(
+        '0x' + (fillHexColor + 'FF').slice(1).match(/.{1,2}/g).reverse().join('')
+      );
+
+      let frontier = [startingPoint];
+      let targetHexColor = getPixelHexColor(pixelData, startingPoint);
+
+      while (frontier.length > 0) {
+        const point = frontier.pop();
+
+        const hexColor = getPixelHexColor(pixelData, point);
+        if (hexColor === targetHexColor) {
+          setPixelHexColor(pixelData, point, color);
+
+          frontier.push({ x: point.x + 1, y: point.y });
+          frontier.push({ x: point.x - 1, y: point.y });
+          frontier.push({ x: point.x, y: point.y + 1 });
+          frontier.push({ x: point.x, y: point.y - 1 });
+        }
+      }
+
+      // put the data back
+      ctx.putImageData(imageData, 0, 0);
+    };
   }
 })();

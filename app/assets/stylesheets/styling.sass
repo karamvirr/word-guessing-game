@@ -125,6 +125,10 @@ header, footer
   right: 50%
   transform: translateX(50%)
 
+.u-pin
+  height: 100%
+  width: 100%
+
 .u-container
   // flex direction row by default
   display: flex
@@ -138,6 +142,8 @@ header, footer
     justify-content: center
   &.u-container--justify-around
     justify-content: space-around
+  &.u-container--justify-evenly
+    justify-content: space-evenly
   &.u-container--align-center
     align-items: center
 
@@ -375,7 +381,7 @@ h2
     visibility: hidden
   &.palette-element--selected
     transform: scale(0.5)
-  &.palette-element__clear-button
+  &.palette-element__clear-button, &.palette-element__fill-button
     background-image: (linear-gradient(270deg, lighten($white-smoke-color, 35%), white))
   &.palette-element__color
     &.palette-element__color--black

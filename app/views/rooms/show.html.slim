@@ -33,7 +33,7 @@ table
         class: "c-button c-button--tertiary \
           #{"hidden" unless (@room.drawer_id == @user.id) && !@room.game_started}"
     td.td--muted
-      #drawing-palette.u-container.u-container--justify-around.hidden
+      #drawing-palette.u-pin.u-container.u-container--justify-evenly.u-container--align-center.hidden
         .u-container
           #000000.palette-element.palette-element__color.palette-element__color--black
           #FF0000.palette-element.palette-element__color.palette-element__color--red
@@ -44,13 +44,18 @@ table
           #800080.palette-element.palette-element__color.palette-element__color--purple
           #A52A2A.palette-element.palette-element__color.palette-element__color--brown
           #C0C0C0.palette-element.palette-element__color.palette-element__color--silver
-        .u-container.u-container--align-center
-          button.palette-element.palette-element__undo-button.palette-element-hidden
-            i.fa.fa-arrow-left
-          button.palette-element.palette-element__redo-button.palette-element-hidden
-            i.fa.fa-arrow-right
-          button.palette-element.palette-element__clear-button
-            i.fa.fa-trash
+          #FFFFFF.palette-element.palette-element__color.palette-element__color--white
+        .u-container.u-container--column
+          .u-container.u-mb4
+            button.palette-element.palette-element__fill-button
+              i.fa-solid.fa-fill-drip
+            button.palette-element.palette-element__clear-button
+              i.fa-solid.fa-trash-can
+          .u-container
+            button.palette-element.palette-element__undo-button.palette-element-hidden
+              i.fa-solid.fa-rotate-left
+            button.palette-element.palette-element__redo-button.palette-element-hidden
+              i.fa-solid.fa-rotate-right
     td.u-centered.td--muted.unselectable
       p#round-information Round #{@room.round} of 3
 
@@ -59,20 +64,20 @@ javascript:
     if (window.clipboardData && window.clipboardData.setData) {
       // Internet Explorer-specific code path to prevent textarea being shown
       // while dialog is visible.
-      return window.clipboardData.setData("Text", text);
-    } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-      let textarea = document.createElement("textarea");
+      return window.clipboardData.setData('Text', text);
+    } else if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
+      let textarea = document.createElement('textarea');
       textarea.textContent = text;
       // Prevent scrolling to bottom of page in Microsoft Edge.
-      textarea.style.position = "fixed";
+      textarea.style.position = 'fixed';
       document.body.appendChild(textarea);
       textarea.select();
       try {
         // Security exception may be thrown by some browsers.
-        return document.execCommand("copy");
+        return document.execCommand('copy');
       } catch (ex) {
-        console.warn("Copy to clipboard failed.", ex);
-        return prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        console.warn('Copy to clipboard failed.', ex);
+        return prompt('Copy to clipboard: Ctrl+C, Enter', text);
       } finally {
         document.body.removeChild(textarea);
       }
