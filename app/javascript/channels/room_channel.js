@@ -81,6 +81,7 @@ import consumer from "channels/consumer"
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.strokeStyle = data.color;
+        ctx.lineWidth = data.size;
 
         ctx.beginPath();
         ctx.moveTo(data.start_x, data.start_y);
@@ -110,7 +111,7 @@ import consumer from "channels/consumer"
 
       // @param {JSON} data - payload containing message content.
       renderMessage(data) {
-        let chat = document.querySelector('.message-container');
+        let chat = document.querySelector('.messages');
         let message = null;
         if (data.server_message) {
           if (data.message.endsWith('has left the chat.')) {
@@ -118,7 +119,7 @@ import consumer from "channels/consumer"
           }
           message = `
             <li>
-              <p class="message" ${true ? `style="color: ${data.color_hex}"` : ""}>
+              <p class="message" ${`style="color: ${data.color_hex}"`}>
                 <b>${data.message}</b>
               </p>
             </li>
@@ -216,9 +217,9 @@ import consumer from "channels/consumer"
       // @param {Integer} drawerId - user id of the current drawer.
       toggleDrawingPaletteVisibility(drawerId) {
         if (drawerId == userId) {
-          document.querySelector('#drawing-palette').classList.remove('hidden');
+          document.querySelector('.palette').classList.remove('hidden--grid-cell');
         } else {
-          document.querySelector('#drawing-palette').classList.add('hidden');
+          document.querySelector('.palette').classList.add('hidden--grid-cell');
         }
       },
 
@@ -311,8 +312,8 @@ import consumer from "channels/consumer"
     });
 
     /* Utilities */
-    const username = document.querySelector('tr.second-row > td').id;
-    const userId = parseInt(document.querySelector('.player-container').id);
+    const username = document.querySelector('.player-name.hidden').id;
+    const userId = parseInt(document.querySelector('.player-id.hidden').id);
 
     /* Messaging */
     const chatInput = document.querySelector('input#chat_input');
@@ -338,7 +339,7 @@ import consumer from "channels/consumer"
       if (event.code === 'Enter') {
         event.preventDefault();
         const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
-        if (sanitizedInput.length > 0) {
+        if (sanitizedInput.trim().length > 0) {
           channel.emit({
             context: 'message',
             user_id: userId,
@@ -417,14 +418,14 @@ import consumer from "channels/consumer"
 
     const toggleUndoRedoVisibility = () => {
       if (undoData.length == 0) {
-        undoButton.classList.add('palette-element-hidden');
+        undoButton.classList.add('palette-element--hidden');
       } else {
-        undoButton.classList.remove('palette-element-hidden');
+        undoButton.classList.remove('palette-element--hidden');
       }
       if (redoData.length == 0) {
-        redoButton.classList.add('palette-element-hidden');
+        redoButton.classList.add('palette-element--hidden');
       } else {
-        redoButton.classList.remove('palette-element-hidden');
+        redoButton.classList.remove('palette-element--hidden');
       }
     };
 
@@ -445,15 +446,47 @@ import consumer from "channels/consumer"
         selectedColorOption.classList.toggle('palette-element--selected');
         selectedColorOption = event.target;
         selectedColorOption.classList.toggle('palette-element--selected');
+        adjustBrushSize();
       })
     });
 
+    /* Brush Size Slider */
+    const slider = document.querySelector('div.slider-container input');
+    const paintBrushIcon = document.querySelector('div.paint-brush-icon');
+    const sizeLabel = document.querySelector('p.paint-brush-size');
+    const adjustBrushSize = (value) => {
+      if (value) {
+        paintBrushIcon.style.setProperty('--size', value);
+        sizeLabel.innerText = `${value}px`;
+      }
+      paintBrushIcon.style.setProperty('--color', getSelectedColor());
+    };
+    const hideBrushSizeLabel = (hide) => {
+      if (hide) {
+        sizeLabel.classList.add('hidden');
+      } else {
+        sizeLabel.classList.remove('hidden');
+      }
+    }
+    adjustBrushSize(slider.value);
+    slider.addEventListener('input', (event) => {
+      adjustBrushSize(event.target.value);
+    });
+    slider.addEventListener('mousedown', () => { hideBrushSizeLabel(false) });
+    slider.addEventListener('mouseup', () => { hideBrushSizeLabel(true) });
+
+    // mobile touch event handlers
+    slider.addEventListener('touchstart', () => { hideBrushSizeLabel(false) });
+    slider.addEventListener('touchend', () => { hideBrushSizeLabel(true) });
+
     /* Drawing */
     let canvas = document.querySelector('canvas');
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    let offset = canvas.getBoundingClientRect();
     let ctx = canvas.getContext('2d');
+
+    const canvasWidth = canvas.offsetWidth;
+    const canvasHeight = canvas.offsetHeight;
+
+    let offset = canvas.getBoundingClientRect();
     let isDrawing = false;
     let p1 = { x: 0, y: 0 }
     let p2 = { x: 0, y: 0 }
@@ -479,54 +512,6 @@ import consumer from "channels/consumer"
 
     window.addEventListener("resize", () => {
       offset = canvas.getBoundingClientRect();
-    });
-
-    canvas.addEventListener('mousedown', (event) => {
-      if (fillButton.classList.contains('palette-element--selected')) {
-        let fillStart = {};
-        scalePoint(fillStart, event);
-        fillStart.x = parseInt(fillStart.x);
-        fillStart.y = parseInt(fillStart.y);
-
-        const hex = getSelectedColor();
-        floodFill(fillStart, hex);
-
-        saveState();
-        channel.emit({ context: 'flood_fill', url: undoData[undoData.length - 1] })
-        fillButton.classList.remove('palette-element--selected');
-      } else {
-        isDrawing = true;
-        offset = canvas.getBoundingClientRect();
-        scalePoint(p1, event);
-      }
-    });
-    canvas.addEventListener('mouseleave', () => {
-      isDrawing = false;
-    });
-    canvas.addEventListener('mouseup', () => {
-      isDrawing = false;
-      if (captureCanvasState) {
-        saveState();
-      }
-      captureCanvasState = false;
-    });
-    canvas.addEventListener('mousemove', (event) => {
-      if (isDrawing) {
-        scalePoint(p2, event);
-        if(pointDistance(p1, p2) > 2) {
-          captureCanvasState = true;
-          channel.emit({
-            context: 'draw',
-            color: getSelectedColor(),
-            start_x: p1.x,
-            start_y: p1.y,
-            end_x: p2.x,
-            end_y: p2.y
-          })
-          p1.x = p2.x;
-          p1.y = p2.y;
-        }
-      }
     });
 
     const getPixelHexColor = (pixelData, point) => {
@@ -583,5 +568,78 @@ import consumer from "channels/consumer"
       // put the data back
       ctx.putImageData(imageData, 0, 0);
     };
+
+    // event handlers for touch/mouse events.
+    const touchStart = (event) => {
+      if (fillButton.classList.contains('palette-element--selected')) {
+        let fillStart = {};
+        scalePoint(fillStart, event);
+        fillStart.x = parseInt(fillStart.x);
+        fillStart.y = parseInt(fillStart.y);
+
+        const hex = getSelectedColor();
+        floodFill(fillStart, hex);
+
+        saveState();
+        channel.emit({ context: 'flood_fill', url: undoData[undoData.length - 1] })
+        fillButton.classList.remove('palette-element--selected');
+      } else {
+        isDrawing = true;
+        offset = canvas.getBoundingClientRect();
+        scalePoint(p1, event);
+      }
+    };
+    const touchMove = (event) => {
+      if (isDrawing) {
+        scalePoint(p2, event);
+        if(pointDistance(p1, p2) > 3) {
+          captureCanvasState = true;
+          channel.emit({
+            context: 'draw',
+            color: getSelectedColor(),
+            size: slider.value,
+            start_x: p1.x,
+            start_y: p1.y,
+            end_x: p2.x,
+            end_y: p2.y
+          })
+          p1.x = p2.x;
+          p1.y = p2.y;
+        }
+      }
+    };
+    const touchLeave = () => {
+      isDrawing = false;
+    };
+    const touchEnd = () => {
+      isDrawing = false;
+      if (captureCanvasState) {
+        saveState();
+      }
+      captureCanvasState = false;
+    };
+
+    canvas.addEventListener('mousedown', touchStart);
+    canvas.addEventListener('mouseleave', touchLeave);
+    canvas.addEventListener('mousemove', touchMove);
+    canvas.addEventListener('mouseup', touchEnd);
+
+    // mobile touch event handlers
+    canvas.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+      touchStart(event.touches[0])
+    });
+    canvas.addEventListener('touchcancel', (event) => {
+      event.preventDefault();
+      touchLeave(event.touches[0])
+    });
+    canvas.addEventListener('touchmove', (event) => {
+      event.preventDefault();
+      touchMove(event.touches[0])
+    });
+    canvas.addEventListener('touchend', (event) => {
+      event.preventDefault();
+      touchEnd(event.touches[0])
+    });
   }
 })();

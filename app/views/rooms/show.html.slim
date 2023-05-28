@@ -1,40 +1,36 @@
-table
-  tr.first-row
-    td.first-column.u-centered.td--muted
-      .u-container.u-container--justify-center
-        .clipboard
-          code copy room link
-          button
-            i.fa.fa-solid.fa-copy
-    td.second-column.u-centered.td--muted.unselectable
-      h2#word #{(@room.drawer_id == @user.id) ? @room.current_word : @room.hint}
-    td.third-column.u-centered.td--muted.unselectable
+.game
+  .wrapper
+    .topbar
+      .clipboard
+        code copy room link
+        button
+          i.fa.fa-solid.fa-copy
+      h2#word = (@room.drawer_id == @user.id) ? @room.current_word : @room.hint
       h2#time-remaining #{@room.time_remaining}s
-  tr.second-row
-    td id="#{@user.name}"
-      ul.player-container id="#{@user.id}"
-    td.canvas-container
+    .players
+      .player-name.hidden id="#{@user.name}"
+      .player-id.hidden id="#{@user.id}"
+      ul.player-container
+    .canvas
+      canvas width="800" height="600"
       .u-overlay.hidden
         .u-container.u-container--column.u-container--align-center.u-container--full-height.u-container--justify-center
           h2.u-my10
           .u-card-container
-      canvas
-    td
-      .chat-container
-        ul.message-container
-        .typing-message
-          p
-            i
-        form
-          = search_field_tag :chat_input, nil, autocomplete: :off
-  tr.third-row
-    td.u-centered.td--muted
-      = link_to 'Start Game', nil, id: 'start-game',
+    .chat
+      ul.messages
+      .typing-message
+        p
+          i
+      form
+        = search_field_tag :chat_input, nil, autocomplete: :off
+    .start-button
+      = link_to "Start Game", nil, id: "start-game",
         class: "c-button c-button--tertiary \
           #{"hidden" unless (@room.drawer_id == @user.id) && !@room.game_started}"
-    td.td--muted
-      #drawing-palette.u-pin.u-container.u-container--justify-evenly.u-container--align-center.hidden
-        .u-container
+    .palette.hidden--grid-cell
+      .button-group
+        .color-options
           #000000.palette-element.palette-element__color.palette-element__color--black
           #FF0000.palette-element.palette-element__color.palette-element__color--red
           #FFA500.palette-element.palette-element__color.palette-element__color--orange
@@ -45,19 +41,22 @@ table
           #A52A2A.palette-element.palette-element__color.palette-element__color--brown
           #C0C0C0.palette-element.palette-element__color.palette-element__color--silver
           #FFFFFF.palette-element.palette-element__color.palette-element__color--white
-        .u-container.u-container--column
-          .u-container.u-mb4
-            button.palette-element.palette-element__fill-button
-              i.fa-solid.fa-fill-drip
-            button.palette-element.palette-element__clear-button
-              i.fa-solid.fa-trash-can
-          .u-container
-            button.palette-element.palette-element__undo-button.palette-element-hidden
-              i.fa-solid.fa-rotate-left
-            button.palette-element.palette-element__redo-button.palette-element-hidden
-              i.fa-solid.fa-rotate-right
-    td.u-centered.td--muted.unselectable
-      p#round-information Round #{@room.round} of 3
+        .action-button-group
+          button.palette-element.palette-element__fill-button
+            i.fa-solid.fa-fill-drip
+          button.palette-element.palette-element__clear-button
+            i.fa-solid.fa-trash-can
+          button.palette-element.palette-element__undo-button.palette-element--hidden
+            i.fa-solid.fa-rotate-left
+          button.palette-element.palette-element__redo-button.palette-element--hidden
+            i.fa-solid.fa-rotate-right
+      .slider-container
+        input type="range" min="1" max="50" value="10"
+        .paint-brush-icon-container
+          .paint-brush-icon
+          p.paint-brush-size.hidden
+    .round
+      h3#round-information Round #{@room.round} of 3
 
 javascript:
   const copyToClipboard = (text) => {

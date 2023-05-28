@@ -118,19 +118,14 @@ class RoomChannel < ApplicationCable::Channel
         seconds: current_user.room.time_remaining
       })
       if current_user.room.time_remaining == 0
-        emit({
-          context: 'message',
-          server_message: true,
-          message: "Time's up! The word was #{current_user.room.current_word}."
-        })
-        emit({ context: 'end_turn' })
+        emit({ context: 'times_up' })
       end
       return
     when 'times_up'
       emit({
         context: 'message',
         server_message: true,
-        message: "Time's up! The word was #{current_user.room.current_word}."
+        message: "Time's up! The word was '#{current_user.room.current_word}'."
       })
       emit({ context: 'end_turn' })
       return
@@ -138,7 +133,7 @@ class RoomChannel < ApplicationCable::Channel
       emit({
         context: 'message',
         server_message: true,
-        message: "#{current_user.name} is selecting a word."
+        message: "#{current_user.room.current_drawer_name} is selecting a word."
       })
       ActionCable.server.broadcast(
         user_broadcast_identifier(current_user.room.drawer_id),
