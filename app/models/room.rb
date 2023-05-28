@@ -105,6 +105,12 @@ class Room < ApplicationRecord
     self.users[(index + 1) % self.users.count]
   end
 
+  def current_drawer_name
+    self.users.find(self.drawer_id).name
+  rescue
+    nil
+  end
+
 private
   def initialize_slug
     return if self.slug.present?

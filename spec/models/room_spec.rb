@@ -173,6 +173,28 @@ RSpec.describe Room, type: :model do
       end
     end
 
+    describe 'current_drawer_name' do
+      it 'correctly returns name of current drawer' do
+        user_a = create :user, room: subject
+        user_b = create :user, room: subject
+        user_c = create :user, room: subject
+
+        expect(subject.current_drawer_name).to(eq(nil))
+
+        subject.set_next_drawer
+        expect(subject.current_drawer_name).to(eq(user_a.name))
+
+        subject.set_next_drawer
+        expect(subject.current_drawer_name).to(eq(user_b.name))
+
+        subject.set_next_drawer
+        expect(subject.current_drawer_name).to(eq(user_c.name))
+
+        subject.set_next_drawer
+        expect(subject.current_drawer_name).to(eq(user_a.name))
+      end
+    end
+
     describe 'set_next_drawer' do
       describe 'correctly sets attribute value when' do
         it 'there are no users in the room' do
