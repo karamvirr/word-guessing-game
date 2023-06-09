@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_12_10_010243) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_09_064614) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,7 +22,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_10_010243) do
     t.boolean "game_started", default: false
     t.integer "drawer_id"
     t.integer "round", default: 1, null: false
-    t.integer "time_remaining", default: 60, null: false
+    t.integer "time_remaining", default: 90, null: false
     t.string "hint"
   end
 

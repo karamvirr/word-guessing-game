@@ -3,7 +3,7 @@ class Room < ApplicationRecord
   before_validation :initialize_slug
 
   # time a player has to draw in seconds.
-  TIME_LIMIT = 60
+  TIME_LIMIT = 90
 
   has_many :users, -> {
     where.not(name: nil).order("id ASC")
