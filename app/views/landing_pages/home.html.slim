@@ -6,7 +6,7 @@ p.intro.unselectable.u-pin-center A free, ad-free, online multiplayer drawing an
     = link_to 'Join Game', nil,
       class: "c-button c-button--secondary u-mx18 unselectable #{flash.any? ? "c-button--pressed" : ""}"
   form.c-form__search class="#{flash.any? ? "invalid-input" : "hidden"}"
-    = search_field_tag :search_game_room_input, nil,
+    = text_field_tag :search_game_room_input, nil,
       placeholder: 'Enter room code...', autocomplete: :off
     button
       i.fa.fa-search

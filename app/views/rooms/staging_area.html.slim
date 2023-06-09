@@ -7,7 +7,8 @@
         .c-card.animate-pop-in
           p.title = user.name
   form.c-form__search
-    = search_field_tag :name_input, nil, placeholder: 'Enter name...', autocomplete: :off
+    = text_field_tag :name_input, nil, placeholder: "Enter name...",
+      autocomplete: :off
     button
       i.fa.fa-paper-plane
   p.error

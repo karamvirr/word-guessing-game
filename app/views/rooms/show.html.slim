@@ -23,7 +23,8 @@
         p
           i
       form
-        = search_field_tag :chat_input, nil, autocomplete: :off
+        = text_field_tag :chat_input, nil, autocomplete: :off,
+          placeholder: "Chat or make a guess..."
     .start-button
       = link_to "Start Game", nil, id: "start-game",
         class: "c-button c-button--tertiary \
