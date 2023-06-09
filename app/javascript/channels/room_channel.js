@@ -336,7 +336,7 @@ import consumer from "channels/consumer"
           emitTypingEvent();
         }, 1000);
       }
-      if (event.code === 'Enter') {
+      if (event.code === 'Enter' || event.key === 'Enter') {
         event.preventDefault();
         const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
         if (sanitizedInput.trim().length > 0) {
