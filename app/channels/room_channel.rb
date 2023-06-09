@@ -24,6 +24,11 @@ class RoomChannel < ApplicationCable::Channel
       user_id: current_user.id,
       message: "#{current_user.name} has left the chat."
     })
+    emit({
+      context: 'typing',
+      user_name: current_user.name,
+      typing: false
+    })
     if current_user.id == current_user.room.drawer_id
       if current_user.room.game_started?
         emit({ context: 'end_turn' })

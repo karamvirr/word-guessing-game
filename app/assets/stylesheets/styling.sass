@@ -172,7 +172,6 @@ p.intro
   display: flex
   justify-content: center
   > input
-    width: 25vw
     padding: 10px
     border: 2px solid $border-color
     border-radius: 10px 0 0 10px
@@ -603,12 +602,9 @@ h2
   50%
     transform: scale(1.075)
 
-@media screen and (max-width: calc(20vw + 800px))
-  input#search_game_room_input, input#name_input
-    width: 50vw
+@media screen and (max-width: 800px)
   .wrapper
     width: 100%
-  .wrapper
     grid-template-areas: "topbar topbar" "canvas canvas" "palette palette" "players chat" "start-button round"
     grid-template-rows: auto auto auto 500px auto
     grid-template-columns: calc(50% - 0.125em) calc(50% - 0.125em)
@@ -639,6 +635,12 @@ h2
     margin: 1.5em 0
   li
     list-style-type: none
+  .player-card
+    div
+      .name
+        font-size: 1em
+    i
+      font-size: 1.75em
   .canvas
     .u-overlay
       position: fixed
