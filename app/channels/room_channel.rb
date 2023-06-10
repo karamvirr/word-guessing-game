@@ -195,7 +195,29 @@ private
 
   # Generates and returns a random hexadecimal color as a string.
   def generate_random_color
-    "#" + SecureRandom.hex(3)
+    # Maximum iterations allowed
+    max_tries = 5
+
+    max_tries.times do
+      r = SecureRandom.rand(256)
+      g = SecureRandom.rand(256)
+      b = SecureRandom.rand(256)
+
+      # Calculate the perceived luminance using the standard formula
+      # (0.299 * R + 0.587 * G + 0.114 * B) / 255
+      # The RGB values are divided by 255 to scale them between 0 and 1
+      luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+
+      # Check if the luminance is below 0.5.
+      # If it is, the color is dark enough to contrast with white
+      if luminance < 0.5
+        return '#' + [r, g, b].map { |c| c.to_s(16).rjust(2, '0') }.join
+      end
+    end
+
+    # If no suitable random color can be generated, the default color (black)
+    # is returned.
+    return '#000000'
   end
 
   # Returns the correct guess hexadecimal color as a string.
