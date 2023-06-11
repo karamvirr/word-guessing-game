@@ -7,17 +7,27 @@ import consumer from "channels/consumer"
     const channel = consumer.subscriptions.create({ channel: 'StagingAreaChannel', slug: slug }, {
       // Called when the subscription is ready for use on the server
       connected() {
-        console.log('connected to staging area channel!');
+        console.log('staging_area - connected');
       },
 
       // Called when the subscription has been terminated by the server
       disconnected() {
-        console.log('disconnected from staging area channel!');
+        console.log('staging_area - disconnected');
       },
 
       // Called when there's incoming data on the websocket for this channel
       received(data) {
-        console.log('data receieved', data);
+        switch (data.context) {
+          case 'refresh_players':
+            this.refreshPlayers(data.payload);
+            break;
+          case 'usher_to_game_room':
+            this.redirectToGameRoom(data);
+            break;
+        }
+      },
+
+      refreshPlayers(data) {
         const range = document.createRange();
         let players = [];
         document.querySelector('h3').innerText = `Players in room '${data.slug}' (${data.users.length})`
@@ -37,6 +47,10 @@ import consumer from "channels/consumer"
           document.querySelector('#room-information').classList.add('hidden');
         }
       },
+
+      redirectToGameRoom(data) {
+        window.location.href = `/rooms/${data.slug}`;
+      }
     });
 
     const nameInput = document.querySelector('#name_input');
@@ -48,6 +62,13 @@ import consumer from "channels/consumer"
       ).map((node) => { return node.innerText; });
     }
 
+    const sanitizeInput = (input) => {
+      if (input) {
+        return input.replace(/<(.|\n)*?>/g, '').trim();
+      }
+      return "";
+    };
+
     const shake = () => {
       const form = document.querySelector('form');
 
@@ -58,38 +79,30 @@ import consumer from "channels/consumer"
     }
 
     const setNameRequest = (name) => {
-      name = name.trim();
-      if (names().includes(name)) {
-        document.querySelector('p.error').innerText = `'${name}' is already taken, please enter another.`;
+      if (names().includes(name) || name.length === 0) {
+        if (name.length === 0) {
+          document.querySelector('p.error').innerText = `Please enter a name.`;
+        } else {
+          document.querySelector('p.error').innerText = `
+            '${name}' is already taken, please enter another.
+          `;
+        }
         shake();
         return;
       }
       // Calls 'StagingAreaChannel#set_name(data)' on the server.
       channel.perform('set_name', { name: name });
-      // For whatever reason, on Firefox the re-direct would occur before the
-      // logic in StagingAreaChannel#set_name(data) completed. This would yield
-      // in the user joining a room with a name of 'nil'. To remedy this, I
-      // added a slight re-direct delay.
-      setTimeout(() => {
-        // Now that our name is set, let's hop into the game room! :)
-        window.location.href = `/rooms/${slug}`;
-      }, 10);
     };
 
     submitButton.addEventListener('click', (event) => {
       event.preventDefault();
-      if (nameInput.value.length > 0) {
-        setNameRequest(nameInput.value);
-      }
+      setNameRequest(sanitizeInput(nameInput.value));
     });
     nameInput.addEventListener('keydown', (event) => {
       if (event.code === 'Enter') {
-        const sanitizedInput = event.target.value.replace(/<(.|\n)*?>/g, '');
         event.preventDefault();
-        if (sanitizedInput.length > 0) {
-          setNameRequest(sanitizedInput);
-        }
+        setNameRequest(sanitizeInput(event.target.value));
       }
-    })
+    });
   }
 })();
