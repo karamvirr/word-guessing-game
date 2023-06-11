@@ -1,5 +1,5 @@
 import consumer from "channels/consumer"
-
+console.log('room_channel.js');
 (() => {
   const split = window.location.pathname.split('/');
   if (split[1] === 'rooms' && typeof split[2] === 'string') {
@@ -7,12 +7,32 @@ import consumer from "channels/consumer"
     const channel = consumer.subscriptions.create({ channel: 'RoomChannel', slug: slug }, {
       // Called when the subscription is ready for user on the server.
       connected() {
-        console.log('welcome to the party!');
+        console.log('room_channel - connected');
       },
 
       // Called when the subscription has been terminated by the server.
       disconnected() {
-        console.log('thanks for coming!');
+        console.log('room_channel - disconnected');
+        document.querySelector('.game').remove();
+        const sessionErrorHTML = `
+          <div class="connection-error">
+            <p>User session has been lost, redirecting to staging area</p>
+          </div>
+        `;
+        document.body.insertAdjacentHTML("beforeend", sessionErrorHTML);
+        this.handleStagingAreaRedirect();
+      },
+
+      handleStagingAreaRedirect() {
+        const errorText = document.querySelector('.connection-error > p');
+        const slug = window.location.pathname.split('/')[2];
+        if (slug) {
+          setTimeout(() => {
+            window.location.href = `/staging_areas/${slug}`;
+          }, 1250);
+        } else {
+          errorText.innerText = 'User session has been lost, please refresh the page.';
+        }
       },
 
       // Called when there's incoming data on the websocket for this channel
@@ -115,7 +135,7 @@ import consumer from "channels/consumer"
         let message = null;
         if (data.server_message) {
           if (data.message.endsWith('has left the chat.')) {
-            document.querySelector(`.player-card[id='${data.user_id}']`).remove();
+            this.removeUser(data.user_id);
           }
           message = `
             <li>
@@ -143,6 +163,16 @@ import consumer from "channels/consumer"
         });
       },
 
+      // @param {Integer} user_id - id of the user to remove from the room.
+      removeUser(user_id) {
+        document.querySelector(`.player-card[id='${user_id}']`).remove();
+        const playerCards = document.querySelectorAll('.player-card');
+        playerCards.forEach((card, index) => {
+          let position = card.querySelector('p.position');
+          position.innerText = index + 1;
+        });
+      },
+
       // @param {JSON} data - payload containing information about a user in
       //                     the room and whether or not they are currently typing,
       refreshTypingText(data) {
@@ -167,8 +197,8 @@ import consumer from "channels/consumer"
         let players = [];
         data.users.forEach((user, index) => {
           let playerCardHTML = `
-            <li class="player-card" id="${user.id}"
-              ${(user.guessed_correctly) ? `style="background: #79eb79"` : ""}>
+            <li class="player-card ${(user.guessed_correctly) ? "guessed-correctly" : ""}"
+              id="${user.id}">
               <div>
                 <p class="position">${index + 1}</p>
                 <p>
@@ -381,7 +411,13 @@ import consumer from "channels/consumer"
     let redoData = []; // used as a queue.
 
     fillButton.addEventListener('click', () => {
-      fillButton.classList.toggle('palette-element--selected');
+      if (fillButton.classList.contains('palette-element--selected')) {
+        fillButton.classList.remove('palette-element--selected');
+        canvas.classList.remove('fill-mode');
+      } else {
+        fillButton.classList.add('palette-element--selected');
+        canvas.classList.add('fill-mode');
+      }
     });
     clearButton.addEventListener('click', () => {
       redoData = [];
@@ -412,7 +448,7 @@ import consumer from "channels/consumer"
       const dataURL = redoData.shift();
       undoData.push(dataURL);
       channel.emit({ context: 'clear_canvas' });
-      channel.emit({ context: 'restore_state', url: dataURL })
+      channel.emit({ context: 'restore_state', url: dataURL });
       toggleUndoRedoVisibility();
     };
 
@@ -488,8 +524,8 @@ import consumer from "channels/consumer"
 
     let offset = canvas.getBoundingClientRect();
     let isDrawing = false;
-    let p1 = { x: 0, y: 0 }
-    let p2 = { x: 0, y: 0 }
+    let p1 = { x: 0, y: 0 };
+    let p2 = { x: 0, y: 0 };
 
     // used for undo/redo functionality
     let captureCanvasState = false;
@@ -552,6 +588,7 @@ import consumer from "channels/consumer"
       let targetHexColor = getPixelHexColor(pixelData, startingPoint);
 
       while (frontier.length > 0) {
+        if (frontier.length > 1000000) { break; }
         const point = frontier.pop();
 
         const hexColor = getPixelHexColor(pixelData, point);
@@ -581,7 +618,8 @@ import consumer from "channels/consumer"
         floodFill(fillStart, hex);
 
         saveState();
-        channel.emit({ context: 'flood_fill', url: undoData[undoData.length - 1] })
+        channel.emit({ context: 'flood_fill', url: undoData[undoData.length - 1] });
+        canvas.classList.remove('fill-mode');
         fillButton.classList.remove('palette-element--selected');
       } else {
         isDrawing = true;
@@ -602,7 +640,7 @@ import consumer from "channels/consumer"
             start_y: p1.y,
             end_x: p2.x,
             end_y: p2.y
-          })
+          });
           p1.x = p2.x;
           p1.y = p2.y;
         }
@@ -627,19 +665,19 @@ import consumer from "channels/consumer"
     // mobile touch event handlers
     canvas.addEventListener('touchstart', (event) => {
       event.preventDefault();
-      touchStart(event.touches[0])
+      touchStart(event.touches[0]);
     });
     canvas.addEventListener('touchcancel', (event) => {
       event.preventDefault();
-      touchLeave(event.touches[0])
+      touchLeave(event.touches[0]);
     });
     canvas.addEventListener('touchmove', (event) => {
       event.preventDefault();
-      touchMove(event.touches[0])
+      touchMove(event.touches[0]);
     });
     canvas.addEventListener('touchend', (event) => {
       event.preventDefault();
-      touchEnd(event.touches[0])
+      touchEnd(event.touches[0]);
     });
   }
 })();

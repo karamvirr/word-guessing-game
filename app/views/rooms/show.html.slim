@@ -83,20 +83,22 @@ javascript:
       }
     }
   };
-
+  let locked = false;
   document.querySelector('.clipboard').addEventListener('click', () => {
-    if (copyToClipboard(window.location.href)) {
+    if (copyToClipboard(window.location.href) && !locked) {
       let buttonIcon = document.querySelector('.clipboard > button > i');
       let label = document.querySelector('.clipboard > code');
       buttonIcon.classList.toggle('fa-clipboard');
       buttonIcon.classList.toggle('fa-check');
       buttonIcon.classList.toggle('success');
       label.innerText = 'copied!';
+      locked = true;
       setTimeout(() => {
         buttonIcon.classList.toggle('fa-check');
         buttonIcon.classList.toggle('success');
         buttonIcon.classList.toggle('fa-clipboard');
         label.innerText = 'copy room link';
+        locked = false
       }, 2000);
     }
   });

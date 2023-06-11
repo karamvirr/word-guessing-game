@@ -18,13 +18,6 @@ class RoomChannel < ApplicationCable::Channel
   # Any cleanup needed when channel is unsubscribed.
   def unsubscribed
     emit({
-      context: 'message',
-      server_message: true,
-      color_hex: generate_random_color,
-      user_id: current_user.id,
-      message: "#{current_user.name} has left the chat."
-    })
-    emit({
       context: 'typing',
       user_name: current_user.name,
       typing: false
@@ -32,11 +25,18 @@ class RoomChannel < ApplicationCable::Channel
     if current_user.id == current_user.room.drawer_id
       if current_user.room.game_started?
         emit({ context: 'end_turn' })
-      else
+      elsif current_user.room.users.count > 1
         current_user.room.set_next_drawer
         refresh_components
       end
     end
+    emit({
+      context: 'message',
+      server_message: true,
+      color_hex: generate_random_color,
+      user_id: current_user.id,
+      message: "#{current_user.name} has left the chat."
+    })
     current_user.destroy!
   end
 
@@ -167,7 +167,7 @@ class RoomChannel < ApplicationCable::Channel
             emit({ context: 'end_turn' })
           end
           return
-        else
+        elsif !data["server_message"]
           current_user.room.update_hint(guess)
           emit({
             context: 'set_header',

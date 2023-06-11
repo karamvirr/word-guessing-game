@@ -7,6 +7,15 @@ class RoomsController < ApplicationController
 
   def staging_area
     @room = Room.find_by(slug: params[:slug])
+    if @room.nil?
+      flash[:error] = "Room code '#{params[:slug]}' is invalid."
+      redirect_to(root_path)
+      return
+    end
+    if @user.nil?
+      @user = User.create!(room: @room)
+      cookies.encrypted[:user_id] = @user.id
+    end
   end
 
   def show
@@ -21,11 +30,11 @@ class RoomsController < ApplicationController
 
     @user = User.find_by(id: cookies.encrypted[:user_id])
     # Redirect user to staging area if user information is not set.
-    if @user.nil?
-      # Most likely the cookie :user_id is not set.
+    if @user.nil? || @user.name.nil?
       @user = User.create!(room: @room)
       cookies.encrypted[:user_id] = @user.id
       redirect_to(staging_area_path(slug: @room.slug))
+      return
     end
   end
 end
