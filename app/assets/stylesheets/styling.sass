@@ -24,13 +24,13 @@ $tertiary-button-color: #E7E7E7
 $linkedin-color: #0177B5
 $github-color: #6E5494
 $error-color: red
-$success-color: #80BFBF
+$check-icon-color: #80BFBF
 $alternating-color: #EEF3F8
 $clipboard-color: #6B5F4D
 $white-smoke-color: #f5f5f5
 $element-shadow-color: hsla(0, 0%, 0%, 0.2)
 $element-shadow-hover-color: hsla(0, 0%, 0%, 0.3)
-$correct-guess-color: #66B266
+$correct-guess-color: #79EB79
 $overlay-gray-color: #C5C5C5
 
 // MIXINS
@@ -191,7 +191,7 @@ p.intro
     border-left: 2px solid $border-color
 
 .success
-  color: $success-color
+  color: $check-icon-color
 
 .error
   text-align: center
@@ -208,6 +208,17 @@ p.intro
   visibility: hidden
   height: 0
   padding: 0.125em 0 !important
+
+.connection-error
+  position: absolute
+  left: 50%
+  top: 50%
+  transform: translate(-50%, -50%)
+  p:after
+    display: inline-block
+    content: ''
+    width: 1em
+    animation: ellipsis steps(1, end) 1s infinite
 
 .game
   position: relative
@@ -301,10 +312,12 @@ ul.player-container
     left: 0
     height: 100%
     width: 100%
-    cursor: crosshair
+    cursor: asset-url('canvas-cursor.png') 7.5 7.5, crosshair
     overflow-clip-margin: content-box
     overflow: clip
     aspect-ratio: auto 800 / 600
+    &.fill-mode
+      cursor: asset-url('fill-cursor.png'), pointer
 
 .start-button
   grid-area: start-button
@@ -378,11 +391,12 @@ h2
     color: white
     cursor: pointer
 
-.success
-  color: $correct-guess-color
-
 .message, .player-card > div > p > b, .typing-message i
   word-break: break-word
+
+ul.messages li, .player-card
+  &:nth-child(even)
+    background-color: $alternating-color
 
 .chat
   grid-area: chat
@@ -398,8 +412,6 @@ h2
         font-size: 1em
         margin: 0.75em 1em
         animation: fade-in 0.25s ease-in-out
-      &:nth-child(even)
-        background-color: $alternating-color
   .typing-message
     padding: 0em 0.75em
     height: 1.5em
@@ -422,6 +434,11 @@ h2
       font-size: 1.05em
       padding: 0.1em 0.5em
       border-radius: 4px
+
+.guessed-correctly
+  background: $correct-guess-color
+  &:nth-child(even)
+    background: darken($correct-guess-color, 10%)
 
 @keyframes fade-in
   0%
@@ -602,6 +619,18 @@ h2
   50%
     transform: scale(1.075)
 
+@keyframes ellipsis
+  0%
+    content: ''
+  25%
+    content: '.'
+  50%
+    content: '..'
+  75%
+    content: '...'
+  100%
+    content: ''
+
 @media screen and (max-width: 800px)
   .wrapper
     width: 100%
@@ -611,6 +640,8 @@ h2
     grid-gap: 0.25em
   .topbar
     flex-direction: column
+    gap: 0.75em
+    margin-bottom: 1em
     h2#word
       transform: none
       position: initial
