@@ -46,4 +46,54 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  context 'callbacks' do
+    describe 'room_clean_up' do
+      context 'destroys room' do
+        it 'if no users are left in game room after destroying user' do
+          room = subject.room
+          expect(room.users.count).to(eq(1))
+          expect(room.users_in_staging.count).to(eq(0))
+          subject.destroy
+          expect(Room.exists?(room.id)).to(be(false))
+        end
+
+        it 'if room is empty and only current user is in staging area' do
+          subject.name = nil
+          subject.save!
+          room = subject.room
+          expect(room.users.count).to(eq(0))
+          expect(room.users_in_staging.count).to(eq(1))
+          subject.destroy
+          expect(Room.exists?(room.id)).to(be(false))
+        end
+      end
+
+      context 'does not destroy room' do
+        it 'if users are left in game room' do
+          room = subject.room
+          rand(1..4).times do
+            create :user, room: room
+          end
+          users_in_game_room = room.users.count
+          expect(room.users.count).to(eq(users_in_game_room))
+          expect(room.users_in_staging.count).to(eq(0))
+          subject.destroy
+          expect(Room.exists?(room.id)).to(be(true))
+        end
+
+        it 'if users are left in staging area' do
+          room = subject.room
+          users_in_staging = rand(1..4)
+          users_in_staging.times do
+            create :user, room: room, name: nil
+          end
+          expect(room.users.count).to(eq(1))
+          expect(room.users_in_staging.count).to(eq(users_in_staging))
+          subject.destroy
+          expect(Room.exists?(room.id)).to(be(true))
+        end
+      end
+    end
+  end
 end
