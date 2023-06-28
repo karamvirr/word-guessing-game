@@ -24,7 +24,12 @@ class RoomChannel < ApplicationCable::Channel
     })
     if current_user.id == current_user.room.drawer_id
       if current_user.room.game_started?
-        emit({ context: 'end_turn' })
+        if current_user.room.users.count == 1
+          emit({ context: 'end_game' })
+          current_user.room.update(drawer_id: nil)
+        else
+          emit({ context: 'end_turn' })
+        end
       elsif current_user.room.users.count > 1
         current_user.room.set_next_drawer
         refresh_components
@@ -122,7 +127,7 @@ class RoomChannel < ApplicationCable::Channel
         context: 'refresh_time_remaining_header',
         seconds: current_user.room.time_remaining
       })
-      if current_user.room.time_remaining == 0
+      if current_user.room.time_remaining <= 0
         emit({ context: 'times_up' })
       end
       return
