@@ -11,6 +11,33 @@ require "capybara/rails"
 Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
 # Add additional requires below this line. Rails is not loaded until this point!
+Capybara.register_driver :selenium_chrome_headless do |app|
+  options = Selenium::WebDriver::Chrome::Options.new(
+    args: [
+      "no-sandbox",
+      "disable-dev-shm-usage",
+      "disable-popup-blocking",
+      "headless",
+      "disable-gpu",
+      "window-size=1920,1080",
+      "--enable-features=NetworkService,NetworkServiceInProcess",
+      "--disable-features=VizDisplayCompositor"
+    ],
+  )
+
+  client = Selenium::WebDriver::Remote::Http::Default.new
+  client.open_timeout = 120
+  client.read_timeout = 120
+
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :chrome,
+    http_client: client,
+    options: options,
+  )
+end
+
+Capybara.javascript_driver = :selenium_chrome_headless
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
