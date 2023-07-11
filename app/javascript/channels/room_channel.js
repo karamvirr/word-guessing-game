@@ -39,7 +39,7 @@ console.log('room_channel.js');
       received(data) {
         switch (data.context) {
           case 'draw':
-            this.draw(data);
+            window.requestAnimationFrame(() => { this.draw(data) });
             break;
           case 'clear_canvas':
             this.clearCanvas();
