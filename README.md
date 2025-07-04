@@ -2,6 +2,17 @@
 
 A real-time multiplayer drawing and guessing game built with Ruby on Rails and WebSockets. Players take turns drawing words while others guess, featuring live canvas synchronization and interactive gameplay.
 
+## 📸 Screenshots
+<div align="center">
+   <img src="https://github.com/user-attachments/assets/98f173da-3bd6-467b-9287-6765ce66c82a" alt="Home Page" width="80%" />
+   <img src="https://github.com/user-attachments/assets/451272c0-9ed2-4845-bfd4-224354104eae" alt="Game Room Screenshot #1" width="80%" />
+   <img src="https://github.com/user-attachments/assets/5b82e56f-74ce-4d77-948c-6018afea4171" alt="Game Room Screenshot #2" width="80%" />
+   <img src="https://github.com/user-attachments/assets/6aa165bc-aad1-4726-b0ec-cd36596963c3" alt="Game Room Screenshot #3" width="80%" />
+   <img src="https://github.com/user-attachments/assets/3aba11f7-f0af-49b1-8979-c89ea8f6db56" alt="Game Room Screenshot #4" width="80%" />
+   <img src="https://github.com/user-attachments/assets/60a5812d-dd14-43df-84b8-301c2839c1a8" alt="Game Room Screenshot #5" width="80%" />
+   <img src="https://github.com/user-attachments/assets/c6806038-5503-40d4-bd9b-d0198108a856" alt="Game Room Screenshot #6" width="80%" />
+</div>
+
 ## 🎮 Game Features
 
 - **Real-time Multiplayer**: Up to multiple players per room with live synchronization
@@ -41,6 +52,17 @@ A real-time multiplayer drawing and guessing game built with Ruby on Rails and W
 - **Clear Canvas**: Reset the drawing
 - **Undo/Redo**: Drawing history management
 
+## 🪣 Flood Fill Algorithm
+
+The flood fill (paint bucket) tool allows users to quickly fill large areas with color by clicking on any region of the canvas.
+
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/54a17ed4-23ec-4993-af58-87e5df08e60c" alt="Flood Fill Demo">
+  <p><em>Flood fill algorithm demonstration (slowed down to visualize the pixel-by-pixel traversal)</em></p>
+</div>
+
+The implementation uses a **stack-based flood fill algorithm** that efficiently fills connected regions of the same color. Starting from the clicked pixel, the algorithm uses a **stack data structure** to track neighboring pixels and performs **4-connected traversal** (up, down, left, right) to identify all pixels that should be filled. The algorithm includes **boundary checking** to prevent overflow and **safety limits** to handle large areas gracefully. All flood fill operations are synchronized in **real-time** across connected players via WebSockets, ensuring everyone sees the same canvas state instantly.
+
 ## 📋 Requirements
 
 - Ruby 3.1.0
@@ -70,6 +92,9 @@ redis-server
 
 # Start the server
 rails server
+
+# Visit the application
+open https://localhost:3000
 ```
 
 ### Environment Setup
