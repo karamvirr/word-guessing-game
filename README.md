@@ -53,12 +53,12 @@ A real-time multiplayer drawing and guessing game built with Ruby on Rails and W
 - **Clear Canvas**: Reset the drawing
 - **Undo/Redo**: Drawing history management
 
-## 🪣 Flood Fill Algorithm
+## 🪣 [Flood Fill Algorithm](https://en.wikipedia.org/wiki/Flood_fill)
 
 The flood fill (paint bucket) tool allows users to quickly fill large areas with color by clicking on any region of the canvas.
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/54a17ed4-23ec-4993-af58-87e5df08e60c" alt="Flood Fill Demo">
+  <img src="https://github.com/user-attachments/assets/60618377-a6ae-4177-8e01-c7152f1b13f8" alt="Flood Fill Demo">
   <p><em>Flood fill algorithm demonstration (slowed down to visualize the pixel-by-pixel traversal)</em></p>
 </div>
 
