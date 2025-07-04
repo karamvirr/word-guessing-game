@@ -66,7 +66,7 @@ The implementation uses a **stack-based flood fill algorithm** that efficiently 
 
 ## 📋 Requirements
 
-- Ruby 3.1.0
+- Ruby 3.4.1
 - PostgreSQL
 - Redis (for ActionCable)
 - Node.js (for asset compilation)
