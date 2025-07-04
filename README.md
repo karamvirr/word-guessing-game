@@ -6,11 +6,12 @@ A real-time multiplayer drawing and guessing game built with Ruby on Rails and W
 <div align="center">
    <img src="https://github.com/user-attachments/assets/98f173da-3bd6-467b-9287-6765ce66c82a" alt="Home Page" width="80%" />
    <img src="https://github.com/user-attachments/assets/451272c0-9ed2-4845-bfd4-224354104eae" alt="Game Room Screenshot #1" width="80%" />
-   <img src="https://github.com/user-attachments/assets/5b82e56f-74ce-4d77-948c-6018afea4171" alt="Game Room Screenshot #2" width="80%" />
-   <img src="https://github.com/user-attachments/assets/6aa165bc-aad1-4726-b0ec-cd36596963c3" alt="Game Room Screenshot #3" width="80%" />
-   <img src="https://github.com/user-attachments/assets/3aba11f7-f0af-49b1-8979-c89ea8f6db56" alt="Game Room Screenshot #4" width="80%" />
-   <img src="https://github.com/user-attachments/assets/60a5812d-dd14-43df-84b8-301c2839c1a8" alt="Game Room Screenshot #5" width="80%" />
-   <img src="https://github.com/user-attachments/assets/c6806038-5503-40d4-bd9b-d0198108a856" alt="Game Room Screenshot #6" width="80%" />
+   <img src="https://github.com/user-attachments/assets/9eb28790-a820-406a-b2ca-5b9461f06114" alt="Game Room Screenshot #2" width="80%" />
+   <img src="https://github.com/user-attachments/assets/5b82e56f-74ce-4d77-948c-6018afea4171" alt="Game Room Screenshot #3" width="80%" />
+   <img src="https://github.com/user-attachments/assets/6aa165bc-aad1-4726-b0ec-cd36596963c3" alt="Game Room Screenshot #4" width="80%" />
+   <img src="https://github.com/user-attachments/assets/3aba11f7-f0af-49b1-8979-c89ea8f6db56" alt="Game Room Screenshot #5" width="80%" />
+   <img src="https://github.com/user-attachments/assets/60a5812d-dd14-43df-84b8-301c2839c1a8" alt="Game Room Screenshot #6" width="80%" />
+   <img src="https://github.com/user-attachments/assets/c6806038-5503-40d4-bd9b-d0198108a856" alt="Game Room Screenshot #7" width="80%" />
 </div>
 
 ## 🎮 Game Features
