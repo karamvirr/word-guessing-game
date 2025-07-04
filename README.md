@@ -58,7 +58,7 @@ A real-time multiplayer drawing and guessing game built with Ruby on Rails and W
 The flood fill (paint bucket) tool allows users to quickly fill large areas with color by clicking on any region of the canvas.
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/60618377-a6ae-4177-8e01-c7152f1b13f8" alt="Flood Fill Demo">
+  <img src="https://github.com/user-attachments/assets/5f25882d-b922-43ed-aca5-53bd470c41a5" alt="Flood Fill Demo">
   <p><em>Flood fill algorithm demonstration (slowed down to visualize the pixel-by-pixel traversal)</em></p>
 </div>
 
@@ -214,7 +214,3 @@ The application is ready for deployment on platforms like:
 ## 📄 License
 
 This project is available as open source under the terms of the MIT License.
-
-## 📞 Support
-
-For questions or issues, please open an issue in the GitHub repository.
