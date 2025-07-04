@@ -14,8 +14,7 @@ threads min_threads_count, max_threads_count
 worker_timeout 3600 if ENV.fetch("RAILS_ENV", "development") == "development"
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
-#
-port ENV.fetch("PORT") { 3000 }
+port ENV.fetch("PORT") { 3000 } unless Rails.env.development?
 
 # Specifies the `environment` that Puma will run in.
 #
@@ -41,3 +40,11 @@ pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
+
+# SSL configuration for development
+if Rails.env.development?
+  unless File.exist?("localhost.key") && File.exist?("localhost.crt")
+    system("openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 365 -keyout localhost.key -out localhost.crt -subj '/CN=localhost' 2>/dev/null")
+  end
+  ssl_bind "0.0.0.0", "3000", key: "localhost.key", cert: "localhost.crt"
+end
